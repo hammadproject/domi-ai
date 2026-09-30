@@ -12,8 +12,13 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, field_validator
 
-from app.api.deps import TurnRunner, get_turn_runner
+from app.api.deps import TurnRunner, get_quota_guard, get_turn_runner
+from app.config import get_settings
+from app.errors import HIGH_DEMAND_MESSAGE, HighDemandError
+from app.llm.retry import is_rate_limited
+from app.quota import QuotaExceeded, QuotaGuard
 from app.rag.models import Hit
+from app.ratelimit import RateLimiter, get_rate_limiter, limit_chat_ip
 
 router = APIRouter()
 log = logging.getLogger(__name__)
@@ -50,8 +55,37 @@ def token_chunks(text: str) -> list[str]:
     return ["".join(words[i : i + WORDS_PER_TOKEN_EVENT]) for i in range(0, len(words), 3)]
 
 
-@router.post("/api/chat")
-async def chat(req: ChatRequest, run_turn: TurnRunner = Depends(get_turn_runner)):
+def failure_event(exc: BaseException) -> str:
+    """Map a failed turn to a safe, friendly SSE error event (never leaks internals)."""
+    if isinstance(exc, QuotaExceeded):
+        return sse(
+            "error",
+            {"code": "high_demand", "message": HIGH_DEMAND_MESSAGE, "retry_after": exc.retry_after},
+        )
+    if isinstance(exc, TimeoutError):
+        return sse("error", {"code": "timeout", "message": "That took too long. Try again."})
+    if isinstance(exc, Exception) and is_rate_limited(exc):  # Gemini's own 429 after retries
+        return sse("error", {"code": "high_demand", "message": HIGH_DEMAND_MESSAGE})
+    return sse(
+        "error", {"code": "internal", "message": "Something went wrong. Please try again shortly."}
+    )
+
+
+@router.post("/api/chat", dependencies=[Depends(limit_chat_ip)])
+async def chat(
+    req: ChatRequest,
+    run_turn: TurnRunner = Depends(get_turn_runner),
+    limiter: RateLimiter = Depends(get_rate_limiter),
+    quota: QuotaGuard = Depends(get_quota_guard),
+):
+    if req.session_id:  # per-session limit on top of the per-IP one
+        await limiter.check(
+            "chat-session", req.session_id, get_settings().chat_rate_limit_per_minute
+        )
+    # Degrade before spending anything if today's LLM budget is gone (HTTP 503 + Retry-After).
+    if await asyncio.to_thread(quota.remaining) <= 0:
+        raise HighDemandError(retry_after=quota.seconds_until_reset())
+
     session_id = req.session_id or uuid.uuid4().hex
 
     async def stream() -> AsyncIterator[str]:
@@ -59,16 +93,12 @@ async def chat(req: ChatRequest, run_turn: TurnRunner = Depends(get_turn_runner)
             result = await asyncio.wait_for(
                 run_turn(session_id, req.message), timeout=TURN_TIMEOUT_SECONDS
             )
-        except TimeoutError:
-            log.warning("chat turn timed out")
-            yield sse("error", {"code": "timeout", "message": "That took too long. Try again."})
-            return
-        except Exception:  # noqa: BLE001 - never leak internals to the client
-            log.exception("chat turn failed")
-            yield sse(
-                "error",
-                {"code": "internal", "message": "Something went wrong. Please try again shortly."},
-            )
+        except Exception as exc:  # noqa: BLE001 - TimeoutError included
+            if isinstance(exc, QuotaExceeded | TimeoutError):
+                log.warning("chat turn ended early: %s", type(exc).__name__)
+            else:
+                log.exception("chat turn failed")
+            yield failure_event(exc)
             return
 
         if result.trace_url:

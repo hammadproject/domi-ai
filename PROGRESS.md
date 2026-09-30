@@ -4,14 +4,14 @@ Last updated: 2026-09-30 · Source of truth for scope: `plan.md` · Repo: https:
 
 ## Where to continue
 
-**Next: Phase 7, Backend hardening** (rate limiting, daily LLM quota guard, Redis caching, error schema).
+**Next: Phase 8, Frontend** (Next.js + Tailwind + Leaflet: listing grid and detail, filters, streaming chat panel, map pins synced with chat). The backend API it needs is ready: `/api/chat` (SSE), `/api/listings`, `/api/listings/{id}`, `/api/mortgage/estimate`.
 Phase 6 is done and verified, including Langfuse traces (one trace per chat turn, a span per graph node, LLM calls as generations).
 
 Before starting Phase 6:
 - Langfuse keys (Hobby cloud tier, free, no card) in `.env`: `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST`. Optional: the chat can be built first and tracing switched on once the keys exist.
 - `langgraph` and `langfuse` are named in plan.md, so they are approved dependencies.
 
-## Status: 6 of 10 phases done (the backend works end to end; hardening, frontend and deploy remain)
+## Status: 7 of 10 phases done (the backend is complete and hardened; frontend, final evals and deploy remain)
 
 | # | Phase | Status | Commit | Notes |
 |---|---|---|---|---|
@@ -21,7 +21,7 @@ Before starting Phase 6:
 | 4 | Tools | Done | `11e4887` | Mortgage (PMI, scenarios, 15 vs 30, DTI affordability) and 2-3 listing comparison |
 | 5 | Guardrails | Done | `f264e7e` | Input and output guards, eval runner. 60/60 main, 20/20 held-out, 24/24 output |
 | 6 | Agent and chat API | Done | see git log | LangGraph agent, Redis session memory, SSE `/api/chat`, `/api/mortgage/estimate` |
-| 7 | Backend hardening | Not started | | Rate limiting, daily LLM quota guard, Redis caching, tracing spans |
+| 7 | Backend hardening | Done | see git log | Sliding-window rate limits (429 + Retry-After), daily LLM budget (503 high_demand), Redis caching, common error schema, JSON logs with request ids and secret redaction, timeouts and retry hints, CORS |
 | 8 | Frontend | Not started | | Next.js + Leaflet, chat-to-map sync |
 | 9 | Tests and evals | Partly done | | Guardrail evals exist; retrieval eval (hit@5, MRR) and faithfulness eval still to build |
 | 10 | Deploy and docs | Not started | | Vercel, Render, Neon, Upstash; README with architecture and demo |
@@ -63,8 +63,9 @@ Everything is pushed to `origin/main` except this file.
 - RentCast has no listing descriptions or features. Cards use structured fields only, so keyword search for things like "pool" finds nothing.
 - Vague words ("affordable", "cheap") don't sort by price.
 - Guardrails: rules alone settle about 5 of 8 unseen steering prompts. The rest rely on the Gemini classifier, and the guard refuses politely when that classifier is unavailable. The 100% on the main set is optimistic because the rules were tuned on it.
-- The parse result is not cached in Redis yet (Phase 7). Each chat turn will cost 1 parse call, 1 query embedding and 1 generation call.
-- The daily LLM call counter is not built yet (Phase 7).
+- Each uncached chat turn costs 1 parse call, 1 query embedding and 1 generation call. Parse results and retrieval candidates are cached in Redis (TTL 1 h and 5 min), so repeats cost less.
+- `LLM_DAILY_CALL_LIMIT` (default 200) counts generation calls per Pacific-time day. Gemini does not publish free-tier numbers in its docs; check https://aistudio.google.com/rate-limit and set it below your real limit. Embedding calls are not counted.
+- Rate limiting and the quota fail open if Redis is down (the API stays up). Set `TRUST_FORWARDED_FOR=true` only behind a proxy you control (Render), or all users share one IP.
 - Langfuse Cloud stores chat messages and answers in traces. Its legacy `/api/public/traces` API is gone for new orgs; query `/api/public/v2/observations` instead.
 - Gemini sometimes returns brief 5xx errors; the LLM wrapper retries them up to 3 times, and chat degrades to a plain result list if generation still fails.
 

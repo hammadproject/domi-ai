@@ -19,9 +19,13 @@ class LLMClient(Protocol):
 class GeminiClient:
     def __init__(self) -> None:
         from google import genai
+        from google.genai import types
 
         s = get_settings()
-        self._client = genai.Client(api_key=s.gemini_api_key.get_secret_value())
+        self._client = genai.Client(
+            api_key=s.gemini_api_key.get_secret_value(),
+            http_options=types.HttpOptions(timeout=s.llm_timeout_seconds * 1000),  # ms
+        )
         self._model = s.llm_model
 
     def generate_structured(self, prompt: str, schema: type[T], *, system: str | None = None) -> T:

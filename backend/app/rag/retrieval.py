@@ -14,6 +14,7 @@ _COLS = (
     Listing.lng, Listing.price, Listing.beds, Listing.baths, Listing.sqft, Listing.year_built,
     Listing.property_type, Listing.hoa_fee, Listing.listing_card,
 )  # fmt: skip
+HIT_COLUMNS = _COLS  # public alias for the listings API
 _STOPWORDS = {
     "the", "and", "for", "with", "near", "in", "a", "an", "of", "to", "or", "is", "are", "on",
     "at", "by", "some", "any", "that", "this", "home", "homes", "house", "houses", "bed",

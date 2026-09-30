@@ -13,7 +13,11 @@ import uvicorn
 
 def main() -> None:
     config = uvicorn.Config(
-        "app.main:app", host="0.0.0.0", port=int(os.environ.get("PORT", "8000"))
+        "app.main:app",
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", "8000")),
+        log_config=None,  # use our JSON logging (set up in app.main) for everything
+        access_log=False,  # RequestContextMiddleware writes the access-log line
     )
     server = uvicorn.Server(config)
     asyncio.run(

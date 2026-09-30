@@ -1,11 +1,12 @@
 """POST /api/mortgage/estimate: direct calculator endpoint for UI use (no LLM)."""
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, model_validator
 
+from app.ratelimit import limit_api
 from app.tools.mortgage import MortgageAssumptions, PaymentBreakdown, estimate_payment
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(limit_api)])
 
 
 class MortgageRequest(BaseModel):

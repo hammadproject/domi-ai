@@ -32,7 +32,13 @@ class Settings(BaseSettings):
     front_end_dti: float = 0.28  # max housing payment / gross monthly income
     back_end_dti: float = 0.36  # max (housing + other debts) / gross monthly income
 
-    rate_limit_per_minute: int = 30
+    rate_limit_per_minute: int = 30  # general API, per IP
+    chat_rate_limit_per_minute: int = 10  # /api/chat, per IP and per session (costs LLM quota)
+    trust_forwarded_for: bool = False  # True only behind a proxy you control (Render, Vercel)
+    cache_ttl_seconds: int = 300  # listing queries and retrieval results
+    parse_cache_ttl_seconds: int = 3600  # LLM query-understanding results
+    llm_timeout_seconds: int = 30
+    embedding_timeout_seconds: int = 20
     cors_origins: str = "http://localhost:3000"
 
     @property

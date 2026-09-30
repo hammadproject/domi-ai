@@ -38,3 +38,10 @@ Fair Housing guards live in `backend/app/guardrails/` (rules first; the LLM clas
 .venv\Scripts\python -m evals.run_evals guardrails --set heldout    # prompts the rules were NOT tuned on
 .venv\Scripts\python -m evals.run_evals guardrails --no-llm         # rules only, zero Gemini calls
 ```
+
+## Production behaviour (Phase 7)
+
+- Every non-streaming error uses `{"error": {"code", "message", "request_id", "details?"}}`; every response carries `X-Request-ID`, and every log line is JSON with that id. Secrets are redacted from logs.
+- Rate limits (per IP, plus per session for chat): `RATE_LIMIT_PER_MINUTE`, `CHAT_RATE_LIMIT_PER_MINUTE` -> `429` + `Retry-After`.
+- `LLM_DAILY_CALL_LIMIT` caps Gemini calls per Pacific-time day; once spent, chat answers `503 high_demand` + `Retry-After` instead of failing on Gemini's own 429.
+- Redis caches listing queries, retrieval candidates and LLM parse results. Re-ingesting listings clears the cache.

@@ -6,6 +6,7 @@ from collections.abc import Awaitable, Callable
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.cache import Cache, make_key
 from app.ingestion.embed import embed_query
 from app.llm.gemini import LLMClient
 from app.rag.fusion import reciprocal_rank_fusion
@@ -59,6 +60,29 @@ def db_retriever(session: AsyncSession) -> Retriever:
             await vector_search(session, f, qvec),
             await keyword_search(session, f, semantic_query),
         )
+
+    return run
+
+
+def cached_retriever(inner: Retriever, cache: Cache, ttl: int) -> Retriever:
+    """Memoize (filters, query) -> candidate lists. A hit skips the query embedding call and
+    both SQL searches. Reranking still runs, so results are identical to an uncached call."""
+
+    async def run(f: Filters, semantic_query: str) -> tuple[list[Hit], list[Hit]]:
+        key = make_key("retrieval", f.model_dump(), semantic_query.strip().lower())
+        hit = await cache.get(key)
+        if hit is not None:
+            return (
+                [Hit.model_validate(h) for h in hit["vec"]],
+                [Hit.model_validate(h) for h in hit["kw"]],
+            )
+        vec, kw = await inner(f, semantic_query)
+        await cache.set(
+            key,
+            {"vec": [h.model_dump() for h in vec], "kw": [h.model_dump() for h in kw]},
+            ttl,
+        )
+        return vec, kw
 
     return run
 

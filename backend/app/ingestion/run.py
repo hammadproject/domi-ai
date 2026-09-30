@@ -7,6 +7,7 @@ import selectors
 
 from sqlalchemy import func, select
 
+from app.cache import Cache
 from app.db import get_engine, get_session
 from app.ingestion.embed import embed_texts
 from app.ingestion.load import upsert_listings
@@ -14,6 +15,7 @@ from app.ingestion.normalize import normalize_listing
 from app.ingestion.rentcast import fetch_city
 from app.models import Listing
 from app.observability.logging import setup_logging
+from app.redis import get_redis
 
 log = logging.getLogger("ingestion")
 DEFAULT_CITIES = [("Austin", "TX"), ("Dallas", "TX"), ("Phoenix", "AZ")]
@@ -37,6 +39,8 @@ async def ingest(cities: list[tuple[str, str]]) -> dict[str, int]:
         )
         for city, n in counts:
             log.info("in DB: %s = %d", city, n)
+    cleared = await Cache(get_redis()).clear()  # cached search results are now stale
+    log.info("cleared %d cached entries", cleared)
     await get_engine().dispose()
     return stats
 

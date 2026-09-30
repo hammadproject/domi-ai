@@ -44,7 +44,10 @@ def gemini_embedder(task_type: str = "RETRIEVAL_DOCUMENT") -> Embedder:
     from google.genai import types
 
     s = get_settings()
-    client = genai.Client(api_key=s.gemini_api_key.get_secret_value())
+    client = genai.Client(
+        api_key=s.gemini_api_key.get_secret_value(),
+        http_options=types.HttpOptions(timeout=s.embedding_timeout_seconds * 1000),  # ms
+    )
 
     def embed(texts: list[str]) -> list[list[float]]:
         resp = call_with_429_backoff(

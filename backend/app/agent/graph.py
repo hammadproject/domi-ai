@@ -18,6 +18,7 @@ from app.agent import formatting as fmt
 from app.agent.generate import generate_grounded, validate_ids
 from app.agent.memory import SessionState, SessionStore
 from app.agent.understanding import TurnUnderstanding, understand
+from app.cache import Cache, make_key
 from app.guardrails.input_guard import InputGuardResult, check_input
 from app.guardrails.output_guard import check_output
 from app.llm.counting import CountingLLM
@@ -46,6 +47,8 @@ class AgentDeps:
     tracer: Tracer
     retriever: Retriever
     score_fn: ScoreFn = cross_encoder_scores
+    cache: Cache | None = None
+    parse_cache_ttl: int = 3600
 
 
 class AgentState(TypedDict, total=False):
@@ -110,6 +113,27 @@ def build_graph(deps: AgentDeps):  # noqa: C901 - one flat node table reads best
 
         return wrapper
 
+    async def _cached_understand(message: str, session: SessionState) -> TurnUnderstanding:
+        """The routing+parse call, memoized. The key covers everything the prompt depends on
+        (message, current filters, the shown listings), so a hit is always equivalent."""
+        if deps.cache is None:
+            return await asyncio.to_thread(understand, message, session, deps.llm)
+        key = make_key(
+            "parse",
+            message.strip().lower(),
+            session.filters.active(),
+            [h.id for h in session.last_results],
+        )
+        cached = await deps.cache.get(key)
+        if cached is not None:
+            try:
+                return TurnUnderstanding.model_validate(cached)
+            except ValueError:
+                log.warning("bad parse-cache entry ignored")
+        u = await asyncio.to_thread(understand, message, session, deps.llm)
+        await deps.cache.set(key, u.model_dump(), deps.parse_cache_ttl)
+        return u
+
     # ---- nodes ----
     async def input_guard(state: AgentState) -> dict[str, Any]:
         res = await asyncio.to_thread(check_input, state["message"], llm=deps.llm)
@@ -119,7 +143,7 @@ def build_graph(deps: AgentDeps):  # noqa: C901 - one flat node table reads best
 
     async def understand_node(state: AgentState) -> dict[str, Any]:
         session = state["session"]
-        u = await asyncio.to_thread(understand, state["message"], session, deps.llm)
+        u = await _cached_understand(state["message"], session)
         requested = merge_filters(session.filters, u) if u.intent == "search" else session.filters
         return {"understanding": u, "requested_filters": requested, "intent": u.intent}
 
