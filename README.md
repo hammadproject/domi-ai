@@ -18,3 +18,13 @@ Notes:
 - Use `redis://` or `rediss://` in `REDIS_URL` depending on whether your provider uses TLS.
 - Start the server with `python run.py`, not plain `uvicorn`: psycopg async cannot use Windows' default event loop.
 - `/health` checks Postgres (+ pgvector), Redis and that an LLM key is configured. It never calls Gemini.
+
+## Try retrieval (Phase 3)
+
+```
+cd backend
+.venv\Scripts\python -m app.rag.cli "3 bed house in Austin under 500k"   # one-shot
+.venv\Scripts\python -m app.rag.cli                                      # conversation, follow-ups keep filters
+```
+
+Each query uses 1 Gemini LLM call (parse) + 1 embedding call. The reranker runs locally (fastembed, downloads ~90 MB on first use).

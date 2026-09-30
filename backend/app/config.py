@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     llm_model: str = "gemini-3.1-flash-lite"
     embedding_model: str = "gemini-embedding-001"
     embedding_dim: int = 768
-    reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    reranker_model: str = "Xenova/ms-marco-MiniLM-L-6-v2"
     llm_daily_call_limit: int = 200
 
     langfuse_public_key: str = ""

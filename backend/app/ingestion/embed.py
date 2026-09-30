@@ -6,9 +6,11 @@ import logging
 import math
 import time
 from collections.abc import Callable, Sequence
+from functools import lru_cache
 from pathlib import Path
 
 from app.config import get_settings
+from app.llm.retry import call_with_429_backoff
 
 log = logging.getLogger(__name__)
 
@@ -37,7 +39,7 @@ def _load_cache(path: Path) -> dict[str, list[float]]:
     return out
 
 
-def gemini_embedder() -> Embedder:
+def gemini_embedder(task_type: str = "RETRIEVAL_DOCUMENT") -> Embedder:
     from google import genai
     from google.genai import types
 
@@ -45,26 +47,24 @@ def gemini_embedder() -> Embedder:
     client = genai.Client(api_key=s.gemini_api_key.get_secret_value())
 
     def embed(texts: list[str]) -> list[list[float]]:
-        delay = 5.0
-        for attempt in range(6):
-            try:
-                resp = client.models.embed_content(
-                    model=s.embedding_model,
-                    contents=texts,
-                    config=types.EmbedContentConfig(
-                        task_type="RETRIEVAL_DOCUMENT", output_dimensionality=s.embedding_dim
-                    ),
-                )
-                return [l2_normalize(e.values) for e in resp.embeddings]
-            except Exception as exc:
-                if "429" not in str(exc) and "RESOURCE_EXHAUSTED" not in str(exc):
-                    raise
-                log.warning("embedding 429, backing off %.0fs (attempt %d)", delay, attempt + 1)
-                time.sleep(delay)
-                delay *= 2
-        raise RuntimeError("embedding quota still exhausted after retries")
+        resp = call_with_429_backoff(
+            lambda: client.models.embed_content(
+                model=s.embedding_model,
+                contents=texts,
+                config=types.EmbedContentConfig(
+                    task_type=task_type, output_dimensionality=s.embedding_dim
+                ),
+            )
+        )
+        return [l2_normalize(e.values) for e in resp.embeddings]
 
     return embed
+
+
+@lru_cache(maxsize=256)
+def embed_query(text: str) -> tuple[float, ...]:
+    """Embed a user query (RETRIEVAL_QUERY). Memoized in-process to save quota."""
+    return tuple(gemini_embedder("RETRIEVAL_QUERY")([text])[0])
 
 
 def embed_texts(
