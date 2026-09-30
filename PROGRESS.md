@@ -5,7 +5,7 @@ Last updated: 2026-09-30 · Source of truth for scope: `plan.md` · Repo: https:
 ## Where to continue
 
 **Next: Phase 7, Backend hardening** (rate limiting, daily LLM quota guard, Redis caching, error schema).
-Phase 6 is built; the one open item is confirming a trace in Langfuse, which needs `LANGFUSE_*` keys in `.env`.
+Phase 6 is done and verified, including Langfuse traces (one trace per chat turn, a span per graph node, LLM calls as generations).
 
 Before starting Phase 6:
 - Langfuse keys (Hobby cloud tier, free, no card) in `.env`: `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST`. Optional: the chat can be built first and tracing switched on once the keys exist.
@@ -20,7 +20,7 @@ Before starting Phase 6:
 | 3 | Retrieval | Done | `2b5dc77` | Parser, hybrid search, RRF, local rerank, relax-and-report fallback, CLI |
 | 4 | Tools | Done | `11e4887` | Mortgage (PMI, scenarios, 15 vs 30, DTI affordability) and 2-3 listing comparison |
 | 5 | Guardrails | Done | `f264e7e` | Input and output guards, eval runner. 60/60 main, 20/20 held-out, 24/24 output |
-| 6 | Agent and chat API | Done, Langfuse trace unconfirmed (no keys yet) | see git log | LangGraph agent, Redis session memory, SSE `/api/chat`, `/api/mortgage/estimate` |
+| 6 | Agent and chat API | Done | see git log | LangGraph agent, Redis session memory, SSE `/api/chat`, `/api/mortgage/estimate` |
 | 7 | Backend hardening | Not started | | Rate limiting, daily LLM quota guard, Redis caching, tracing spans |
 | 8 | Frontend | Not started | | Next.js + Leaflet, chat-to-map sync |
 | 9 | Tests and evals | Partly done | | Guardrail evals exist; retrieval eval (hit@5, MRR) and faithfulness eval still to build |
@@ -65,6 +65,8 @@ Everything is pushed to `origin/main` except this file.
 - Guardrails: rules alone settle about 5 of 8 unseen steering prompts. The rest rely on the Gemini classifier, and the guard refuses politely when that classifier is unavailable. The 100% on the main set is optimistic because the rules were tuned on it.
 - The parse result is not cached in Redis yet (Phase 7). Each chat turn will cost 1 parse call, 1 query embedding and 1 generation call.
 - The daily LLM call counter is not built yet (Phase 7).
+- Langfuse Cloud stores chat messages and answers in traces. Its legacy `/api/public/traces` API is gone for new orgs; query `/api/public/v2/observations` instead.
+- Gemini sometimes returns brief 5xx errors; the LLM wrapper retries them up to 3 times, and chat degrades to a plain result list if generation still fails.
 
 ## Local setup gotchas
 

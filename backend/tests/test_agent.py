@@ -264,8 +264,16 @@ async def test_redis_store_uses_ttl_and_survives_failures() -> None:
 
 
 # ---------------- tracing wrapper ----------------
-def test_tracer_is_a_silent_noop_without_keys() -> None:
-    t = Tracer.from_settings()
+def test_tracer_is_a_silent_noop_without_keys(monkeypatch) -> None:
+    from app.config import get_settings
+
+    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "")  # env overrides .env, even when keys exist
+    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "")
+    get_settings.cache_clear()
+    try:
+        t = Tracer.from_settings()
+    finally:
+        get_settings.cache_clear()
     assert not t.enabled
     with t.trace("chat", session_id="s", input={}) as tr, t.span("n") as sp:
         sp.update(output=1)
