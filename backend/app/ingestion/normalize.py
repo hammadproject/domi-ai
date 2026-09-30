@@ -54,6 +54,9 @@ def _clean(v: Any) -> str | None:
     return s or None
 
 
+# Personal contact data we never need to store.
+_PII_KEYS = ("listingAgent", "listingOffice")
+
 _TYPE_NOUN = {
     "single family": "house",
     "condo": "condo",
@@ -120,4 +123,8 @@ def normalize_listing(raw: dict[str, Any]) -> ListingRow | None:
         "description": _clean(raw.get("description")),
         "features": features if isinstance(features, dict) and features else None,
     }
-    return ListingRow(**row, listing_card=build_listing_card(row), raw=raw)
+    return ListingRow(
+        **row,
+        listing_card=build_listing_card(row),
+        raw={k: v for k, v in raw.items() if k not in _PII_KEYS},
+    )

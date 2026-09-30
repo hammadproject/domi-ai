@@ -33,6 +33,13 @@ def test_normalize_full_record_and_card() -> None:
     )
 
 
+def test_normalize_strips_agent_contact_from_raw() -> None:
+    row = normalize_listing({**FULL, "listingAgent": {"email": "a@b.c"}, "listingOffice": {}})
+    assert row is not None
+    assert "listingAgent" not in row.raw and "listingOffice" not in row.raw
+    assert row.raw["id"] == FULL["id"]
+
+
 def test_normalize_missing_fields_do_not_invent_data() -> None:
     row = normalize_listing({"id": "x", "city": "Dallas", "state": "tx", "price": "300000"})
     assert row is not None
