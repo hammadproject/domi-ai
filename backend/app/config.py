@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     home_insurance_annual_default: float = 1800.0
     pmi_rate_default: float = 0.7  # percent of loan per year
 
+    front_end_dti: float = 0.28  # max housing payment / gross monthly income
+    back_end_dti: float = 0.36  # max (housing + other debts) / gross monthly income
+
     rate_limit_per_minute: int = 30
     cors_origins: str = "http://localhost:3000"
 

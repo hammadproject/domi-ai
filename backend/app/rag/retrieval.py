@@ -83,3 +83,10 @@ async def keyword_search(session: AsyncSession, f: Filters, query: str) -> list[
         return []
     rows = (await session.execute(_keyword_stmt(f, terms))).all()
     return [Hit(**dict(r._mapping)) for r in rows]
+
+
+async def get_hits(session: AsyncSession, ids: list[str]) -> list[Hit]:
+    """Fetch listings by id, preserving the requested order; unknown ids are omitted."""
+    rows = (await session.execute(select(*_COLS).where(Listing.id.in_(ids)))).all()
+    by_id = {r.id: Hit(**dict(r._mapping)) for r in rows}
+    return [by_id[i] for i in ids if i in by_id]
