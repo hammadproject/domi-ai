@@ -45,3 +45,14 @@ Fair Housing guards live in `backend/app/guardrails/` (rules first; the LLM clas
 - Rate limits (per IP, plus per session for chat): `RATE_LIMIT_PER_MINUTE`, `CHAT_RATE_LIMIT_PER_MINUTE` -> `429` + `Retry-After`.
 - `LLM_DAILY_CALL_LIMIT` caps Gemini calls per Pacific-time day; once spent, chat answers `503 high_demand` + `Retry-After` instead of failing on Gemini's own 429.
 - Redis caches listing queries, retrieval candidates and LLM parse results. Re-ingesting listings clears the cache.
+
+## Frontend (Phase 8)
+
+```
+cd frontend
+copy .env.local.example .env.local
+npm install
+npm run dev          # http://localhost:3000  (backend must be running on :8000)
+```
+
+See `frontend/README.md` for pages and design notes.

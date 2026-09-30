@@ -11,3 +11,6 @@ data/raw/*
 !data/raw/sample_*.json
 data/cache/
 backend/evals/results/
+
+# user-provided design reference images (large; not part of the app)
+frontend/design-reference/
