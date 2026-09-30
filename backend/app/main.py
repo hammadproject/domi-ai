@@ -10,7 +10,7 @@ from app.observability.logging import request_id_var, setup_logging
 
 setup_logging()
 
-app = FastAPI(title="Real Estate AI Chatbot")
+app = FastAPI(title="Domi API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=get_settings().cors_origin_list,

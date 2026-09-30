@@ -1,4 +1,4 @@
-# US Real Estate AI Chatbot
+# Domi: US Real Estate AI Chatbot
 
 Portfolio project with a strict $0 running cost (free tiers only). See `plan.md` for the full build plan.
 

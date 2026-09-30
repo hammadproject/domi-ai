@@ -1,4 +1,4 @@
-# US Real Estate AI Chatbot: Build Plan (for Claude Code)
+# Domi: US Real Estate AI Chatbot (Build Plan for Claude Code)
 
 Advanced conversational home-search chatbot for the **US market**, on a website with listing pages, a synced map and a streaming chat UI. Portfolio project, built to production-quality standards with a **$0 total running cost** (free tiers and open-source only).
 
@@ -50,7 +50,7 @@ Free-hosting caveats to document in the README: Render free services sleep after
 ## 3. Repo structure
 
 ```
-realestate-ai/
+domi/
   plan.md
   .env.example
   data/raw/                  # cached RentCast JSON (gitignored except samples)

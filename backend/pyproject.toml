@@ -1,5 +1,5 @@
 [project]
-name = "realestate-ai-backend"
+name = "domi-backend"
 version = "0.1.0"
 requires-python = ">=3.11"
 
