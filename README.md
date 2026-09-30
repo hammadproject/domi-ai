@@ -28,3 +28,13 @@ cd backend
 ```
 
 Each query uses 1 Gemini LLM call (parse) + 1 embedding call. The reranker runs locally (fastembed, downloads ~90 MB on first use).
+
+## Guardrails and evals (Phase 4B)
+
+Fair Housing guards live in `backend/app/guardrails/` (rules first; the LLM classifier only runs for ambiguous input and fails closed). Run the eval from `backend/`:
+
+```
+.venv\Scripts\python -m evals.run_evals guardrails                  # 30 steering + 30 normal prompts, plus output set
+.venv\Scripts\python -m evals.run_evals guardrails --set heldout    # prompts the rules were NOT tuned on
+.venv\Scripts\python -m evals.run_evals guardrails --no-llm         # rules only, zero Gemini calls
+```

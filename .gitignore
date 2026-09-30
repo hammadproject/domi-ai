@@ -10,3 +10,4 @@ data/raw/*
 !data/raw/.gitkeep
 !data/raw/sample_*.json
 data/cache/
+backend/evals/results/
