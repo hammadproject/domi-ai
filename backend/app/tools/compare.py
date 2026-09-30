@@ -12,6 +12,12 @@ from app.tools.mortgage import DISCLAIMER, MortgageAssumptions, estimate_payment
 class ListingComparison(BaseModel):
     id: str
     address: str
+    city: str
+    state: str
+    zip: str | None
+    property_type: str | None
+    lat: float | None
+    lng: float | None
     price: int | None
     price_per_sqft: float | None
     beds: float | None
@@ -28,6 +34,7 @@ class ListingComparison(BaseModel):
 class Comparison(BaseModel):
     listings: list[ListingComparison]
     down_payment_pct: float
+    term_years: int
     payment_note: str
 
 
@@ -35,12 +42,18 @@ def _money(n: float) -> str:
     return f"${n:,.0f}"
 
 
-def _metrics(h: Hit, a: MortgageAssumptions, down_pct: float) -> dict[str, float | None]:
+def _metrics(
+    h: Hit, a: MortgageAssumptions, down_pct: float, term_years: int
+) -> dict[str, float | None]:
     ppsf = round(h.price / h.sqft, 2) if h.price and h.sqft else None
     monthly = None
     if h.price:
         monthly = estimate_payment(
-            h.price, down_payment_pct=down_pct, hoa_monthly=h.hoa_fee or 0.0, assumptions=a
+            h.price,
+            down_payment_pct=down_pct,
+            hoa_monthly=h.hoa_fee or 0.0,
+            term_years=term_years,
+            assumptions=a,
         ).total_monthly
     return {
         "price": h.price,
@@ -71,12 +84,13 @@ def compare_listings(
     listings: Sequence[Hit],
     *,
     down_payment_pct: float = 20.0,
+    term_years: int = 30,
     assumptions: MortgageAssumptions | None = None,
 ) -> Comparison:
     if not 2 <= len(listings) <= 3:
         raise ValueError("compare 2 or 3 listings")
     a = assumptions or MortgageAssumptions.from_settings()
-    metrics = [_metrics(h, a, down_payment_pct) for h in listings]
+    metrics = [_metrics(h, a, down_payment_pct, term_years) for h in listings]
     pros: list[list[str]] = [[] for _ in listings]
     cons: list[list[str]] = [[] for _ in listings]
 
@@ -109,6 +123,12 @@ def compare_listings(
             ListingComparison(
                 id=h.id,
                 address=h.address,
+                city=h.city,
+                state=h.state,
+                zip=h.zip,
+                property_type=h.property_type,
+                lat=h.lat,
+                lng=h.lng,
                 price=h.price,
                 price_per_sqft=m["ppsf"],
                 beds=h.beds,
@@ -123,7 +143,10 @@ def compare_listings(
             )
         )
     note = (
-        f"Monthly payment assumes {down_payment_pct:g}% down and $0 HOA where no fee is listed. "
+        f"Monthly payment assumes {down_payment_pct:g}% down, a {term_years}-year loan and $0 HOA "
+        f"where no fee is listed. "
         f"{DISCLAIMER}"
     )
-    return Comparison(listings=out, down_payment_pct=down_payment_pct, payment_note=note)
+    return Comparison(
+        listings=out, down_payment_pct=down_payment_pct, term_years=term_years, payment_note=note
+    )

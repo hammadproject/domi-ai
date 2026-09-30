@@ -9,6 +9,7 @@ Tools and small talk are deterministic, so they cost 1 call. Clear guardrail ref
 
 import asyncio
 import logging
+from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass, field
 from typing import Any, TypedDict
 
@@ -49,6 +50,8 @@ class AgentDeps:
     score_fn: ScoreFn = cross_encoder_scores
     cache: Cache | None = None
     parse_cache_ttl: int = 3600
+    # ids -> listings, for chat requests that say which homes the user is looking at
+    hits_fetcher: Callable[[list[str]], Awaitable[list[Hit]]] | None = None
 
 
 class AgentState(TypedDict, total=False):
@@ -330,10 +333,16 @@ def build_graph(deps: AgentDeps):  # noqa: C901 - one flat node table reads best
     return g.compile()
 
 
-async def run_chat_turn(deps: AgentDeps, session_id: str, message: str) -> ChatResult:
+async def run_chat_turn(
+    deps: AgentDeps, session_id: str, message: str, context_ids: Sequence[str] = ()
+) -> ChatResult:
     """Run one chat turn inside a single Langfuse trace (spans per node)."""
     graph = build_graph(deps)
     session = await deps.store.load(session_id)
+    if context_ids and deps.hits_fetcher is not None:
+        hits = await deps.hits_fetcher(list(context_ids))
+        if hits:
+            session.last_results = [h.model_copy(update={"listing_card": None}) for h in hits]
     with deps.tracer.trace("chat", session_id=session_id, input={"message": message[:500]}) as tr:
         state = await graph.ainvoke({"message": message, "session": session})
         guard = state.get("guard")

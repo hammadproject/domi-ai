@@ -6,11 +6,11 @@ import logging
 import re
 import uuid
 from collections.abc import AsyncIterator
-from typing import Any
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, StringConstraints, field_validator
 
 from app.api.deps import TurnRunner, get_quota_guard, get_turn_runner
 from app.config import get_settings
@@ -31,6 +31,11 @@ SESSION_ID_PATTERN = r"^[A-Za-z0-9_-]{8,64}$"
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=1000)
     session_id: str | None = Field(default=None, pattern=SESSION_ID_PATTERN)
+    # Listings the user is looking at (detail page, map pin, compare tray). They become the
+    # session's "previously shown" list, so "the first one" / "compare them" resolve to them.
+    context_listing_ids: list[Annotated[str, StringConstraints(min_length=1, max_length=200)]] = (
+        Field(default_factory=list, max_length=3)
+    )
 
     @field_validator("message")
     @classmethod
@@ -91,7 +96,8 @@ async def chat(
     async def stream() -> AsyncIterator[str]:
         try:
             result = await asyncio.wait_for(
-                run_turn(session_id, req.message), timeout=TURN_TIMEOUT_SECONDS
+                run_turn(session_id, req.message, req.context_listing_ids),
+                timeout=TURN_TIMEOUT_SECONDS,
             )
         except Exception as exc:  # noqa: BLE001 - TimeoutError included
             if isinstance(exc, QuotaExceeded | TimeoutError):

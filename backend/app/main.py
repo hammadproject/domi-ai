@@ -4,6 +4,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.chat import router as chat_router
+from app.api.cities import router as cities_router
+from app.api.compare import router as compare_router
 from app.api.health import router as health_router
 from app.api.listings import router as listings_router
 from app.api.mortgage import router as mortgage_router
@@ -37,4 +39,6 @@ app.add_middleware(RequestContextMiddleware)
 app.include_router(health_router)
 app.include_router(chat_router)
 app.include_router(listings_router)
+app.include_router(cities_router)
+app.include_router(compare_router)
 app.include_router(mortgage_router)
