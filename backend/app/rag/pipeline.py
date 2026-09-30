@@ -68,7 +68,8 @@ async def _retrieve_ranked(
 ) -> tuple[list[RankedHit], int, int]:
     vec, kw = await retriever(f, semantic_query)
     fused = reciprocal_rank_fusion([vec, kw])
-    ranked = rerank(semantic_query, fused, top_k=top_k, score_fn=score_fn)
+    # cross-encoder inference is CPU-bound; keep it off the event loop
+    ranked = await asyncio.to_thread(rerank, semantic_query, fused, top_k, score_fn)
     return ranked, len(vec), len(kw)
 
 
@@ -94,11 +95,29 @@ async def search(
     score_fn: ScoreFn = cross_encoder_scores,
     top_k: int = 5,
 ) -> SearchResult:
-    """One chat-turn retrieval. Uses exactly one LLM call (the parse)."""
+    """Standalone retrieval for one message (CLI). Uses exactly one LLM call (the parse)."""
     requested, parsed = await asyncio.to_thread(parse_query, message, prior, llm)
+    return await run_search(
+        requested,
+        parsed.semantic_query,
+        retriever=retriever,
+        score_fn=score_fn,
+        top_k=top_k,
+    )
+
+
+async def run_search(
+    requested: Filters,
+    semantic_query: str,
+    *,
+    retriever: Retriever,
+    score_fn: ScoreFn = cross_encoder_scores,
+    top_k: int = 5,
+) -> SearchResult:
+    """Retrieval from ALREADY-PARSED filters (the agent does the single LLM parse itself)."""
     # The text that drives embedding, keywords and rerank. Fall back to a filter summary
     # when the user gave no free-text preferences, so vector search still has an input.
-    query_text = _describe(requested, parsed.semantic_query)
+    query_text = _describe(requested, semantic_query)
 
     ranked, n_vec, n_kw = await _retrieve_ranked(retriever, requested, query_text, score_fn, top_k)
     applied, relaxations = requested, []

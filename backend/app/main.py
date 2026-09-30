@@ -4,7 +4,9 @@ from collections.abc import Awaitable, Callable
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.chat import router as chat_router
 from app.api.health import router as health_router
+from app.api.mortgage import router as mortgage_router
 from app.config import get_settings
 from app.observability.logging import request_id_var, setup_logging
 
@@ -34,3 +36,5 @@ async def request_id_middleware(
 
 
 app.include_router(health_router)
+app.include_router(chat_router)
+app.include_router(mortgage_router)

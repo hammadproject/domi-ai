@@ -1,4 +1,5 @@
 from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
@@ -42,3 +43,12 @@ async def check_db() -> None:
         row = await conn.execute(text("SELECT 1 FROM pg_extension WHERE extname = 'vector'"))
         if row.first() is None:
             raise RuntimeError("pgvector extension not installed")
+
+
+@asynccontextmanager
+async def session_scope() -> AsyncIterator[AsyncSession]:
+    """Session for code that outlives a request dependency (e.g. streaming responses)."""
+    get_engine()
+    assert _sessionmaker is not None
+    async with _sessionmaker() as session:
+        yield session

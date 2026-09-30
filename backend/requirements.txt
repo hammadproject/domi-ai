@@ -13,3 +13,5 @@ pytest-asyncio
 httpx
 ruff
 fastembed
+langgraph
+langfuse
