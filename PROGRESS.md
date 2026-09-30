@@ -4,14 +4,14 @@ Last updated: 2026-09-30 · Source of truth for scope: `plan.md` · Repo: https:
 
 ## Where to continue
 
-**Next: Phase 8, Frontend** (Next.js + Tailwind + Leaflet: listing grid and detail, filters, streaming chat panel, map pins synced with chat). The backend API it needs is ready: `/api/chat` (SSE), `/api/listings`, `/api/listings/{id}`, `/api/mortgage/estimate`.
+**Next: Phase 9, Tests and evals** (retrieval hit@5 / MRR, faithfulness, frontend tests), then **Phase 10, Deploy and docs**.
 Phase 6 is done and verified, including Langfuse traces (one trace per chat turn, a span per graph node, LLM calls as generations).
 
 Before starting Phase 6:
 - Langfuse keys (Hobby cloud tier, free, no card) in `.env`: `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST`. Optional: the chat can be built first and tracing switched on once the keys exist.
 - `langgraph` and `langfuse` are named in plan.md, so they are approved dependencies.
 
-## Status: 7 of 10 phases done (the backend is complete and hardened; frontend, final evals and deploy remain)
+## Status: 8 of 10 phases done (the app works end to end; final evals and deploy remain)
 
 | # | Phase | Status | Commit | Notes |
 |---|---|---|---|---|
@@ -22,7 +22,7 @@ Before starting Phase 6:
 | 5 | Guardrails | Done | `f264e7e` | Input and output guards, eval runner. 60/60 main, 20/20 held-out, 24/24 output |
 | 6 | Agent and chat API | Done | see git log | LangGraph agent, Redis session memory, SSE `/api/chat`, `/api/mortgage/estimate` |
 | 7 | Backend hardening | Done | see git log | Sliding-window rate limits (429 + Retry-After), daily LLM budget (503 high_demand), Redis caching, common error schema, JSON logs with request ids and secret redaction, timeouts and retry hints, CORS |
-| 8 | Frontend | Not started | | Next.js + Leaflet, chat-to-map sync |
+| 8 | Frontend | Done | see git log | Landing, Explore (list + Leaflet map + live chat), detail, compare, affordability, mobile tabs, real loading/empty/error states |
 | 9 | Tests and evals | Partly done | | Guardrail evals exist; retrieval eval (hit@5, MRR) and faithfulness eval still to build |
 | 10 | Deploy and docs | Not started | | Vercel, Render, Neon, Upstash; README with architecture and demo |
 
@@ -76,3 +76,11 @@ Everything is pushed to `origin/main` except this file.
 - Python 3.14.7 in `backend/.venv`.
 - The local folder is still named `real-estate-chatbot`.
 - `.env` is gitignored. It holds `DATABASE_URL`, `REDIS_URL`, `GEMINI_API_KEY`, `RENTCAST_API_KEY`. The Gemini key was pasted into a chat, so consider rotating it.
+
+## Phase 8 notes
+
+- Extra backend endpoints were added for the UI: `GET /api/mortgage/defaults`, `POST /api/mortgage/{compare-terms,affordability}`, `POST /api/compare`, `GET /api/cities`; the chat accepts `context_listing_ids` and the page's `filters`, and its `done` event returns the filters the search used.
+- `RATE_LIMIT_PER_MINUTE` default raised from 30 to 120 (a page makes several calls); chat stays at 10. The frontend shares in-flight GETs.
+- The reranker is warmed in the background at server start.
+- No listing photos exist in the data; maps stand in (see `frontend/README.md`).
+- Added deps (approved): `@phosphor-icons/react`, `motion`; plus `leaflet`, Next, Tailwind from plan.md.

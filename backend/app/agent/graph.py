@@ -82,6 +82,9 @@ class ChatResult:
     guard_categories: list[str] = field(default_factory=list)
     trace_id: str | None = None
     trace_url: str | None = None
+    # for search turns: the filters the results actually used, and what was relaxed to get them
+    filters: dict[str, Any] | None = None
+    relaxations: list[str] = field(default_factory=list)
 
 
 def _brief(value: Any) -> Any:
@@ -334,11 +337,17 @@ def build_graph(deps: AgentDeps):  # noqa: C901 - one flat node table reads best
 
 
 async def run_chat_turn(
-    deps: AgentDeps, session_id: str, message: str, context_ids: Sequence[str] = ()
+    deps: AgentDeps,
+    session_id: str,
+    message: str,
+    context_ids: Sequence[str] = (),
+    filters: Filters | None = None,
 ) -> ChatResult:
     """Run one chat turn inside a single Langfuse trace (spans per node)."""
     graph = build_graph(deps)
     session = await deps.store.load(session_id)
+    if filters is not None:  # the page's filters are the source of truth
+        session.filters = filters
     if context_ids and deps.hits_fetcher is not None:
         hits = await deps.hits_fetcher(list(context_ids))
         if hits:
@@ -358,6 +367,12 @@ async def run_chat_turn(
             guard_categories=cats + state.get("output_flags", []),
             trace_id=tr.trace_id,
             trace_url=tr.url,
+            filters=(
+                state["search"].applied_filters.active()
+                if state.get("intent") == "search" and state.get("search")
+                else None
+            ),
+            relaxations=state["search"].relaxations if state.get("search") else [],
         )
         tr.update(
             output={

@@ -374,8 +374,8 @@ def client():
     def factory(llm):
         deps = make_deps(llm)
 
-        async def runner(session_id, message, context_ids=()):
-            return await run_chat_turn(deps, session_id, message, context_ids)
+        async def runner(session_id, message, context_ids=(), filters=None):
+            return await run_chat_turn(deps, session_id, message, context_ids, filters)
 
         app.dependency_overrides[get_turn_runner] = lambda: runner
         llm_holder["deps"] = deps
@@ -416,7 +416,7 @@ def test_chat_generates_session_id_when_missing(client) -> None:
 def test_chat_emits_error_event_not_a_stack_trace(client) -> None:
     c = client(ScriptedLLM([]))  # empty queue -> IndexError inside the turn
 
-    async def boom(session_id, message, context_ids=()):
+    async def boom(session_id, message, context_ids=(), filters=None):
         raise RuntimeError("secret internal detail")
 
     app.dependency_overrides[get_turn_runner] = lambda: boom

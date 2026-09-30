@@ -44,8 +44,8 @@ def chat_client():
     def factory(llm=None):
         deps = make_deps(llm or ScriptedLLM([TurnUnderstanding(intent="smalltalk")] * 50))
 
-        async def runner(session_id, message, context_ids=()):
-            return await run_chat_turn(deps, session_id, message, context_ids)
+        async def runner(session_id, message, context_ids=(), filters=None):
+            return await run_chat_turn(deps, session_id, message, context_ids, filters)
 
         app.dependency_overrides[get_turn_runner] = lambda: runner
         return TestClient(app)
@@ -268,7 +268,7 @@ def test_chat_returns_503_with_retry_after_when_daily_budget_is_spent(chat_clien
 def test_quota_running_out_mid_turn_becomes_a_friendly_sse_error(chat_client) -> None:
     c = chat_client()
 
-    async def runner(session_id, message, context_ids=()):
+    async def runner(session_id, message, context_ids=(), filters=None):
         raise QuotaExceeded(3600)
 
     app.dependency_overrides[get_turn_runner] = lambda: runner
@@ -448,7 +448,7 @@ def test_chat_turn_timeout_becomes_a_friendly_error(chat_client, monkeypatch) ->
     c = chat_client()
     monkeypatch.setattr(chat_module, "TURN_TIMEOUT_SECONDS", 0.05)
 
-    async def slow(session_id, message, context_ids=()):
+    async def slow(session_id, message, context_ids=(), filters=None):
         await asyncio.sleep(1)
 
     app.dependency_overrides[get_turn_runner] = lambda: slow
@@ -494,7 +494,7 @@ def test_incoming_request_id_is_kept_and_garbage_is_replaced() -> None:
 def test_request_id_is_on_logs_written_while_the_response_streams(chat_client) -> None:
     c = chat_client()
 
-    async def runner(session_id, message, context_ids=()):
+    async def runner(session_id, message, context_ids=(), filters=None):
         logging.getLogger("app.test").warning("inside the turn")
         raise RuntimeError("boom")
 

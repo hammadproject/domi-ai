@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     front_end_dti: float = 0.28  # max housing payment / gross monthly income
     back_end_dti: float = 0.36  # max (housing + other debts) / gross monthly income
 
-    rate_limit_per_minute: int = 30  # general API, per IP
+    rate_limit_per_minute: int = 120  # general API, per IP (a page makes several calls)
     chat_rate_limit_per_minute: int = 10  # /api/chat, per IP and per session (costs LLM quota)
     trust_forwarded_for: bool = False  # True only behind a proxy you control (Render, Vercel)
     cache_ttl_seconds: int = 300  # listing queries and retrieval results

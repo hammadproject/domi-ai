@@ -17,7 +17,7 @@ from app.config import get_settings
 from app.errors import HIGH_DEMAND_MESSAGE, HighDemandError
 from app.llm.retry import is_rate_limited
 from app.quota import QuotaExceeded, QuotaGuard
-from app.rag.models import Hit
+from app.rag.models import Filters, Hit
 from app.ratelimit import RateLimiter, get_rate_limiter, limit_chat_ip
 
 router = APIRouter()
@@ -31,6 +31,10 @@ SESSION_ID_PATTERN = r"^[A-Za-z0-9_-]{8,64}$"
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=1000)
     session_id: str | None = Field(default=None, pattern=SESSION_ID_PATTERN)
+    # The search filters currently shown in the page. When present they replace the session's
+    # remembered filters, so the screen and Domi never disagree ("raise the budget" applies
+    # to what you can see).
+    filters: Filters | None = None
     # Listings the user is looking at (detail page, map pin, compare tray). They become the
     # session's "previously shown" list, so "the first one" / "compare them" resolve to them.
     context_listing_ids: list[Annotated[str, StringConstraints(min_length=1, max_length=200)]] = (
@@ -96,7 +100,7 @@ async def chat(
     async def stream() -> AsyncIterator[str]:
         try:
             result = await asyncio.wait_for(
-                run_turn(session_id, req.message, req.context_listing_ids),
+                run_turn(session_id, req.message, req.context_listing_ids, filters=req.filters),
                 timeout=TURN_TIMEOUT_SECONDS,
             )
         except Exception as exc:  # noqa: BLE001 - TimeoutError included
@@ -128,6 +132,8 @@ async def chat(
                 "refused": result.refused,
                 "degraded": result.degraded,
                 "trace_id": result.trace_id,
+                "filters": result.filters,
+                "relaxations": result.relaxations,
             },
         )
 

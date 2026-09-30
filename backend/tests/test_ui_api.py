@@ -111,7 +111,7 @@ def test_affordability_not_affordable_is_a_result_not_an_error() -> None:
 def test_chat_context_ids_are_validated(monkeypatch) -> None:
     captured = {}
 
-    async def runner(session_id, message, context_ids=()):
+    async def runner(session_id, message, context_ids=(), filters=None):
         captured["ids"] = list(context_ids)
         deps = make_deps(ScriptedLLM([TurnUnderstanding(intent="smalltalk")]))
         return await run_chat_turn(deps, session_id, message)
@@ -161,7 +161,7 @@ async def test_unknown_context_ids_leave_the_session_unchanged() -> None:
 def test_sse_passes_context_ids_to_the_turn(monkeypatch) -> None:
     seen = {}
 
-    async def runner(session_id, message, context_ids=()):
+    async def runner(session_id, message, context_ids=(), filters=None):
         seen["ids"] = list(context_ids)
         deps = make_deps(ScriptedLLM([TurnUnderstanding(intent="smalltalk")]))
         return await run_chat_turn(deps, session_id, message)
@@ -225,3 +225,45 @@ def test_compare_endpoint_errors() -> None:
     assert c.post("/api/compare", json={"listing_ids": [ids[0], ids[0]]}).status_code == 422
     missing = c.post("/api/compare", json={"listing_ids": [ids[0], "no-such-listing"]})
     assert missing.status_code == 404 and missing.json()["error"]["code"] == "not_found"
+
+
+# ---------------- page filters override session memory ----------------
+async def test_page_filters_replace_remembered_filters() -> None:
+    from app.rag.models import Filters
+
+    seen: list[Filters] = []
+    llm = ScriptedLLM(
+        [
+            TurnUnderstanding(intent="search", filters=Filters(city="Dallas", price_max=350_000)),
+            TurnUnderstanding(intent="search", filters=Filters(price_max=550_000)),
+        ]
+    )
+    deps = make_deps(llm, seen=seen)
+    await run_chat_turn(deps, "sess-ui-1", "dallas under 350k")
+    assert seen[-1].city == "Dallas"
+    # the person then changed the page to Austin / 3+ beds; "raise it to 550k" must build on THAT
+    await run_chat_turn(
+        deps, "sess-ui-1", "raise it to 550k", filters=Filters(city="Austin", beds_min=3)
+    )
+    f = seen[-1]
+    assert (f.city, f.beds_min, f.price_max) == ("Austin", 3, 550_000)
+
+
+def test_chat_accepts_and_validates_page_filters() -> None:
+    captured = {}
+
+    async def runner(session_id, message, context_ids=(), filters=None):
+        captured["filters"] = filters
+        deps = make_deps(ScriptedLLM([TurnUnderstanding(intent="smalltalk")]))
+        return await run_chat_turn(deps, session_id, message)
+
+    app.dependency_overrides[get_turn_runner] = lambda: runner
+    ok = client.post(
+        "/api/chat", json={"message": "hello", "filters": {"city": "Austin", "beds_min": 3}}
+    )
+    assert ok.status_code == 200
+    assert captured["filters"].city == "Austin" and captured["filters"].beds_min == 3
+    bad = client.post(
+        "/api/chat", json={"message": "hello", "filters": {"property_type": "Castle"}}
+    )
+    assert bad.status_code == 422

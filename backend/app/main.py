@@ -1,4 +1,7 @@
+import asyncio
 import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,7 +24,26 @@ origins = settings.cors_origin_list
 if "*" in origins:
     log.warning("CORS_ORIGINS contains '*': restrict it to your frontend's origin in production")
 
-app = FastAPI(title="Domi API")
+
+async def _warm_reranker() -> None:
+    """Load the cross-encoder in the background so the first search isn't slow."""
+    try:
+        from app.rag.rerank import _model
+
+        await asyncio.to_thread(_model)
+        log.info("reranker model ready")
+    except Exception:  # noqa: BLE001 - warming is best-effort
+        log.warning("reranker warm-up failed; it will load on first use", exc_info=True)
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    task = asyncio.create_task(_warm_reranker())
+    yield
+    task.cancel()
+
+
+app = FastAPI(title="Domi API", lifespan=lifespan)
 register_error_handlers(app)
 
 app.add_middleware(

@@ -14,11 +14,12 @@ from app.llm.counting import CountingLLM
 from app.llm.gemini import GeminiClient, LLMClient
 from app.observability.tracing import Tracer
 from app.quota import QuotaGuard
+from app.rag.models import Filters
 from app.rag.pipeline import cached_retriever, db_retriever
 from app.rag.retrieval import get_hits
 from app.redis import get_redis, get_sync_redis
 
-TurnRunner = Callable[[str, str, list[str]], Awaitable[ChatResult]]
+TurnRunner = Callable[..., Awaitable[ChatResult]]  # (session_id, message, context_ids, *, filters)
 
 
 @lru_cache
@@ -52,7 +53,9 @@ def get_turn_runner(
 ) -> TurnRunner:
     s = get_settings()
 
-    async def run(session_id: str, message: str, context_ids: list[str]) -> ChatResult:
+    async def run(
+        session_id: str, message: str, context_ids: list[str], filters: Filters | None = None
+    ) -> ChatResult:
         async with session_scope() as db:
             deps = AgentDeps(
                 llm=CountingLLM(llm, tracer, quota),
@@ -63,6 +66,6 @@ def get_turn_runner(
                 parse_cache_ttl=s.parse_cache_ttl_seconds,
                 hits_fetcher=lambda ids: get_hits(db, ids),
             )
-            return await run_chat_turn(deps, session_id, message, context_ids)
+            return await run_chat_turn(deps, session_id, message, context_ids, filters)
 
     return run
