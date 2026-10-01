@@ -469,3 +469,64 @@ def test_mortgage_endpoint_matches_calculator() -> None:
 )
 def test_mortgage_endpoint_validation_422(body) -> None:
     assert TestClient(app).post("/api/mortgage/estimate", json=body).status_code == 422
+
+
+# ---------------- structured answers: lead-in + bullets, not one paragraph ----------------
+async def test_search_answer_is_a_short_lead_in_plus_bullets() -> None:
+    answer = GroundedAnswer(
+        answer="I found 5 homes in Austin under $550,000.",
+        bullets=[
+            "All have 3 bedrooms",
+            "Prices run from $310,000 to $540,000",
+            "HOA not listed for most",
+        ],
+        listing_ids=["h1", "h2"],
+    )
+    llm = ScriptedLLM([search_u(city="Austin")], answer=answer)
+    res = await run_chat_turn(make_deps(llm), "sess-fmt-001", "homes in austin")
+    lines = res.text.split("\n")
+    assert lines[0] == "I found 5 homes in Austin under $550,000."
+    assert lines[1:] == [
+        "- All have 3 bedrooms",
+        "- Prices run from $310,000 to $540,000",
+        "- HOA not listed for most",
+    ]
+
+
+async def test_generation_prompt_forbids_relisting_the_homes() -> None:
+    from app.agent.generate import SYSTEM
+
+    flat = " ".join(SYSTEM.split())
+    assert "do NOT list or describe the homes" in flat and "bullets" in flat and "as a card" in flat
+
+
+async def test_bullets_survive_the_output_guard_but_a_bad_bullet_is_dropped() -> None:
+    answer = GroundedAnswer(
+        answer="Here are 2 homes.",
+        bullets=["Both are 3 bed, 2 bath", "It is a safe, family-friendly area", "HOA not listed"],
+        listing_ids=["h1"],
+    )
+    llm = ScriptedLLM([search_u(city="Austin")], answer=answer)
+    res = await run_chat_turn(make_deps(llm), "sess-fmt-002", "homes in austin")
+    assert res.text.split("\n") == [
+        "Here are 2 homes.",
+        "- Both are 3 bed, 2 bath",
+        "- HOA not listed",
+    ]
+    assert res.guard_categories
+
+
+async def test_tool_answers_are_a_lead_line_then_bullets() -> None:
+    llm = ScriptedLLM(
+        [
+            TurnUnderstanding(
+                intent="mortgage", mortgage=MortgageArgs(price=400_000, down_payment_pct=10)
+            )
+        ]
+    )
+    res = await run_chat_turn(make_deps(llm), "sess-fmt-003", "payment on 400k with 10% down")
+    lines = [x for x in res.text.split("\n") if x]
+    assert lines[0].startswith("Estimated monthly payment")
+    assert all(x.startswith("- ") for x in lines[1:-1])  # every detail is a bullet
+    assert any(x.startswith("- Principal & interest") for x in lines)
+    assert any(x.startswith("- PMI") for x in lines)  # 10% down -> PMI bullet

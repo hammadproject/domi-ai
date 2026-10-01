@@ -77,6 +77,8 @@ OUTPUT_RULES: list[tuple[str, re.Pattern[str]]] = [
 ]
 
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+|\n+")
+_LINE_SENTENCES = re.compile(r"(?<=[.!?])\s+")
+_MARKER = re.compile(r"^\s*(?:[-+•]|\d+\.)\s+")  # bullet / numbered-list prefix
 FALLBACK_TEXT = (
     "I can only describe listings using their objective details (price, size, bedrooms, "
     "year built, HOA and similar). I can't characterise neighborhoods or who they suit."
@@ -97,7 +99,8 @@ class OutputGuardResult(BaseModel):
 
 def find_violations(text: str) -> list[Violation]:
     found: list[Violation] = []
-    for sentence in _SENTENCE_SPLIT.split(text):
+    for raw in _SENTENCE_SPLIT.split(text):
+        sentence = _MARKER.sub("", raw)  # judge the words, not the list marker
         for category, pattern in OUTPUT_RULES:
             if pattern.search(sentence):
                 found.append(Violation(category=category, text=sentence.strip()))
@@ -116,8 +119,17 @@ def check_output(text: str) -> OutputGuardResult:
         log.warning("guardrail output flagged: category=%s", v.category)
 
     bad = {v.text for v in violations}
-    kept = [s for s in _SENTENCE_SPLIT.split(text) if s.strip() and s.strip() not in bad]
-    cleaned = " ".join(kept).strip()
+    lines: list[str] = []
+    for line in text.split("\n"):
+        m = _MARKER.match(line)
+        marker = m.group(0) if m else ""
+        sentences = _LINE_SENTENCES.split(line[len(marker) :])
+        kept = [x for x in sentences if x.strip() and x.strip() not in bad]
+        if kept:  # keep the bullet / numbering and any untouched sentences on this line
+            lines.append(marker + " ".join(kept))
+        elif not line.strip() and lines and lines[-1] != "":
+            lines.append("")  # preserve paragraph breaks
+    cleaned = "\n".join(lines).strip()
     if not cleaned:
         return OutputGuardResult(
             text=FALLBACK_TEXT, modified=True, blocked=True, violations=violations

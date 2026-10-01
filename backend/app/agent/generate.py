@@ -1,29 +1,42 @@
-"""Grounded answer generation for search results (LLM call #2 of the turn)."""
+"""Grounded answer generation for search results (LLM call #2 of the turn).
+
+The app shows every home as a card next to the answer, so the text is deliberately short:
+a one-sentence lead-in plus a few bullet points about the set. It must not re-list the homes.
+"""
 
 import json
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.llm.gemini import LLMClient
 from app.rag.models import Hit, RankedHit
 
 
 class GroundedAnswer(BaseModel):
-    answer: str
+    answer: str = Field(description="ONE short lead-in sentence (max 25 words). Do not list homes.")
+    bullets: list[str] = Field(
+        default_factory=list,
+        description="0 to 4 short facts about the set (max 14 words each).",
+    )
     listing_ids: list[str]
 
 
-SYSTEM = """You are Domi, a US home-search assistant. Answer the user's request using ONLY the
-listing records provided. Rules:
-- Every claim must come from a field in a record. If a field is null, say it isn't listed.
-  Never invent features, conditions, neighborhood details or prices.
-- Refer to listings by their number (#1, #2, ...) and address, in the order given.
-- Do NOT describe neighborhoods, schools, safety, or who a home suits. Stay with objective
-  facts: price, beds, baths, sqft, year built, property type, HOA.
-- If the note is non-empty it says filters were relaxed: tell the user exactly that.
-  If the note is empty, say nothing about filters.
-- Be concise (under 150 words). No mortgage math; offer to estimate payments instead.
-Return JSON: answer, and listing_ids = ids of the listings your answer mentions."""
+SYSTEM = """You are Domi, a US home-search assistant. Answer using ONLY the listing records
+provided. The app displays every home as a card right below your answer, so do NOT list or
+describe the homes one by one.
+
+Return JSON with:
+- answer: ONE short lead-in sentence (max 25 words): how many homes, and for what request.
+  If the note is non-empty, filters were relaxed: say exactly what was relaxed in this sentence.
+- bullets: 0 to 4 short bullet points (max 14 words each, no leading dash) giving useful facts
+  about the set as a whole, for example: what they all share, the price range (lowest to
+  highest), the size range, or a field missing for every home (say "HOA not listed").
+  Only facts you can read from the records. No advice, no opinions.
+- listing_ids: ids of the homes your answer is about.
+
+Rules: every claim must come from a field in a record. Never invent features, conditions or
+prices. Do NOT describe neighborhoods, schools, safety, or who a home suits. Do no mortgage
+math; if useful, one bullet may offer to estimate payments."""
 
 
 def _record(rank: int, h: Hit) -> dict:
@@ -50,6 +63,15 @@ def generate_grounded(
         f"Listing records:\n{json.dumps(records, indent=1)}"
     )
     return llm.generate_structured(prompt, GroundedAnswer, system=SYSTEM)
+
+
+def render(answer: GroundedAnswer) -> str:
+    """Lead-in sentence, then bullets on their own lines ('- ' prefix), as the UI expects."""
+    bullets = [b.strip().lstrip("-• ").strip() for b in answer.bullets if b.strip()][:4]
+    text = answer.answer.strip()
+    if bullets:
+        text += "\n" + "\n".join(f"- {b}" for b in bullets)
+    return text
 
 
 def validate_ids(answer: GroundedAnswer, ranked: list[RankedHit]) -> list[str]:

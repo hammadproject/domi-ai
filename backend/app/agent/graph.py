@@ -16,7 +16,7 @@ from typing import Any, TypedDict
 from langgraph.graph import END, START, StateGraph
 
 from app.agent import formatting as fmt
-from app.agent.generate import generate_grounded, validate_ids
+from app.agent.generate import generate_grounded, render, validate_ids
 from app.agent.memory import SessionState, SessionStore
 from app.agent.understanding import TurnUnderstanding, understand
 from app.cache import Cache, make_key
@@ -286,7 +286,7 @@ def build_graph(deps: AgentDeps):  # noqa: C901 - one flat node table reads best
             return {"draft": fmt.search_fallback_text(res.message, ranked), "degraded": True}
         keep = set(validate_ids(ga, ranked))
         shown = [(i, h) for i, h in state["shown"] if h.id in keep] or state["shown"]
-        return {"draft": ga.answer, "shown": shown}
+        return {"draft": render(ga), "shown": shown}
 
     async def output_guard_node(state: AgentState) -> dict[str, Any]:
         res = check_output(state["draft"])
