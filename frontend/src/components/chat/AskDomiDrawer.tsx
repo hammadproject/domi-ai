@@ -16,7 +16,7 @@ export function AskDomiDrawer() {
   const chat = useChat();
   const pathname = usePathname();
   const reduce = useNoMotion();
-  const hidden = pathname === "/" || chat.inlineChat;
+  const hidden = pathname === "/" || pathname === "/affordability" || chat.inlineChat;
 
   // Escape closes
   useEffect(() => {

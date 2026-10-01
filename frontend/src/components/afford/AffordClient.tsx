@@ -2,16 +2,15 @@
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { CaretDown, ChartBar, HouseLine, Info, Lock } from "@phosphor-icons/react";
+import { ArrowRight, CaretDown, ChartBar, HouseLine, Lock } from "@phosphor-icons/react";
 import { BreakdownBar, breakdownParts } from "@/components/afford/Breakdown";
-import { Button } from "@/components/ui/Button";
+import { Button, LinkButton } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/ui/States";
 import { api } from "@/lib/api";
 import { usd, usd2 } from "@/lib/format";
 import type { Affordability } from "@/lib/types";
 import { useAsync } from "@/lib/use-async";
-import { useChat } from "@/state/chat";
 
 const money = (s: string) => {
   const n = Number(s.replace(/[$,\s]/g, ""));
@@ -27,8 +26,8 @@ function Field({
 }) {
   return (
     <div className={className}>
-      <label htmlFor={id} className="mb-1.5 block text-[13px] font-medium text-ink-soft">{label}</label>
-      <div className={`flex h-11 items-center rounded-xl border bg-canvas px-3 transition-colors focus-within:border-primary ${invalid ? "border-danger" : "border-line"}`}>
+      <label htmlFor={id} className="mb-1 block text-[13px] font-medium text-ink-soft">{label}</label>
+      <div className={`focus-ring-within flex h-10 items-center rounded-xl border bg-canvas px-3 ${invalid ? "border-danger" : "border-line"}`}>
         {prefix && <span className="mr-1.5 text-ink-soft" aria-hidden>{prefix}</span>}
         <input
           id={id}
@@ -37,7 +36,7 @@ function Field({
           onChange={(e) => onChange(e.target.value)}
           aria-invalid={invalid || undefined}
           aria-describedby={hint ? `${id}-hint` : undefined}
-          className="h-full min-w-0 flex-1 bg-transparent text-[15px] text-ink outline-none"
+          className="h-full min-w-0 flex-1 bg-transparent text-[15px] text-ink outline-none focus:outline-none focus-visible:outline-none"
         />
         {suffix && <span className="ml-1.5 text-ink-soft" aria-hidden>{suffix}</span>}
       </div>
@@ -57,7 +56,6 @@ function useDebounced<T>(value: T, ms = 350): T {
 
 export function AffordClient() {
   const sp = useSearchParams();
-  const chat = useChat();
   const defaults = useAsync((s) => api.mortgageDefaults(s), "mortgage-defaults");
   const cities = useAsync((s) => api.cities(s), "cities");
   const d = defaults.data;
@@ -179,30 +177,25 @@ export function AffordClient() {
     }
   };
 
-  const askDomi = (message: string) => {
-    chat.openDrawer();
-    void chat.send(message, { context: [] });
-  };
-
   const t = terms.data;
 
   return (
-    <div className="mx-auto w-full max-w-[1400px] px-4 pb-24 pt-8 sm:px-8">
-      <h1 className="font-display text-4xl font-bold text-ink sm:text-5xl">Make room in your budget.</h1>
-      <p className="mt-2 max-w-[60ch] text-lg text-ink-soft">Explore monthly payments and what you may be able to afford.</p>
+    <div className="mx-auto w-full max-w-[1400px] px-4 pb-16 pt-5 sm:px-8">
+      <h1 className="font-display text-3xl font-bold text-ink sm:text-4xl">Make room in your budget.</h1>
+      <p className="mt-1 max-w-[60ch] text-ink-soft">Explore monthly payments and what you may be able to afford.</p>
 
-      <div className="mt-8 grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+      <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
         {/* ---------- calculator ---------- */}
-        <section aria-label="Mortgage calculator" className="rounded-card border border-line bg-surface p-6 sm:p-8">
-          <h2 className="font-display text-3xl font-bold text-ink">Mortgage calculator</h2>
-          <div className="mt-6 grid gap-x-5 gap-y-5 sm:grid-cols-2">
-            <Field id="price" label="Purchase price" value={price} onChange={setPriceIn} prefix="$" invalid={Boolean(errors.price)} hint={errors.price} className="sm:col-span-2" />
-            <Field id="down-pct" label="Down payment" value={downPct} onChange={(v) => setDownIn({ mode: "pct", value: v })} suffix="%" />
-            <Field id="down-amt" label="Down payment amount" value={downAmt} onChange={(v) => setDownIn({ mode: "amt", value: v })} prefix="$" invalid={Boolean(errors.down)} hint={errors.down || "Linked to the percentage on the left."} />
+        <section aria-label="Mortgage calculator" className="rounded-card border border-line bg-surface p-5 sm:p-6">
+          <h2 className="font-display text-2xl font-bold text-ink">Mortgage calculator</h2>
+          <div className="mt-4 grid gap-x-4 gap-y-3.5 sm:grid-cols-3">
+            <Field id="price" label="Purchase price" value={price} onChange={setPriceIn} prefix="$" invalid={Boolean(errors.price)} hint={errors.price} />
+            <Field id="down-pct" label="Down payment %" value={downPct} onChange={(v) => setDownIn({ mode: "pct", value: v })} suffix="%" />
+            <Field id="down-amt" label="Down payment $" value={downAmt} onChange={(v) => setDownIn({ mode: "amt", value: v })} prefix="$" invalid={Boolean(errors.down)} hint={errors.down || undefined} />
             <Field id="rate" label="Interest rate" value={rate} onChange={setRateIn} suffix="%" invalid={Boolean(errors.rate)} hint={errors.rate} />
             <div>
               <span className="mb-1.5 block text-[13px] font-medium text-ink-soft" id="term-label">Loan term</span>
-              <div role="group" aria-labelledby="term-label" className="flex h-11 rounded-full border border-line bg-canvas p-1">
+              <div role="group" aria-labelledby="term-label" className="flex h-10 rounded-full border border-line bg-canvas p-1">
                 {([15, 30] as const).map((y) => (
                   <button key={y} type="button" onClick={() => setTerm(y)} aria-pressed={term === y} className={`flex-1 rounded-full text-sm font-medium transition-colors ${term === y ? "bg-sage text-sage-ink" : "text-ink-soft hover:text-ink"}`}>
                     {y} years
@@ -210,28 +203,28 @@ export function AffordClient() {
                 ))}
               </div>
             </div>
+            <Field id="hoa" label="Monthly HOA" value={hoa} onChange={setHoa} prefix="$" />
           </div>
 
-          <div className="mt-7 border-t border-line pt-5">
+          <div className="mt-5 border-t border-line pt-4">
             <button type="button" onClick={() => setFeesOpen((v) => !v)} aria-expanded={feesOpen} className="flex w-full items-center justify-between text-left">
-              <span className="text-[17px] font-semibold text-ink">Taxes, insurance &amp; fees</span>
+              <span className="text-[17px] font-semibold text-ink">Taxes &amp; insurance</span>
               <CaretDown size={18} className={`transition-transform ${feesOpen ? "rotate-180" : ""}`} aria-hidden />
             </button>
             {feesOpen && (
-              <div className="mt-4 grid gap-x-5 gap-y-5 sm:grid-cols-2">
-                <Field id="tax" label="Annual property tax" value={tax} onChange={setTaxIn} prefix="$" hint={d ? `Starts at ${d.property_tax_rate}% of the price per year.` : undefined} />
-                <Field id="ins" label="Annual home insurance" value={ins} onChange={setInsIn} prefix="$" />
-                <Field id="hoa" label="Monthly HOA" value={hoa} onChange={setHoa} prefix="$" />
-                <Field id="pmi" label="PMI (annual rate)" value={pmi} onChange={setPmiIn} suffix="%" hint={d ? `PMI applies below ${d.pmi_down_payment_threshold_pct}% down.` : undefined} />
+              <div className="mt-3 grid gap-x-4 gap-y-3.5 sm:grid-cols-3">
+                <Field id="tax" label="Property tax / yr" value={tax} onChange={setTaxIn} prefix="$" />
+                <Field id="ins" label="Insurance / yr" value={ins} onChange={setInsIn} prefix="$" />
+                <Field id="pmi" label="PMI rate / yr" value={pmi} onChange={setPmiIn} suffix="%" />
               </div>
             )}
           </div>
-          <p className="mt-6 flex items-start gap-2 text-xs text-muted"><Info size={14} className="mt-0.5 shrink-0" aria-hidden />Results update as you type. Every assumption is editable.</p>
+
         </section>
 
         {/* ---------- results ---------- */}
-        <section aria-label="Estimated monthly payment" className="rounded-card border border-line bg-sage p-6 sm:p-8" aria-live="polite">
-          <h2 className="font-display text-3xl font-bold text-ink">Estimated monthly payment</h2>
+        <section aria-label="Estimated monthly payment" className="rounded-card border border-line bg-sage p-5 sm:p-6" aria-live="polite">
+          <h2 className="font-display text-2xl font-bold text-ink">Estimated monthly payment</h2>
           {defaults.status === "error" && !d ? (
             <ErrorState error={defaults.error} onRetry={defaults.reload} compact title="Couldn't load the assumptions" />
           ) : est.status === "error" && !b ? (
@@ -244,13 +237,15 @@ export function AffordClient() {
             </div>
           ) : (
             <>
-              <p className={`font-display mt-3 text-6xl font-bold leading-none text-ink transition-opacity ${est.status === "loading" ? "opacity-60" : ""}`}>
+              <p className={`font-display mt-2 text-5xl font-bold leading-none text-ink transition-opacity ${est.status === "loading" ? "opacity-60" : ""}`}>
                 {usd2(b.total_monthly)}
                 <span className="text-3xl font-semibold text-ink-soft"> / mo</span>
               </p>
-              <BreakdownBar parts={breakdownParts(b)} className="mt-6 !bg-surface/60" />
-              <ul className="mt-5 space-y-2.5">
-                {breakdownParts(b).map((p) => (
+              <BreakdownBar parts={breakdownParts(b)} className="mt-4 !bg-surface/60" />
+              <ul className="mt-3 space-y-1.5">
+                {breakdownParts(b)
+                  .filter((p) => p.value > 0 || ['pi', 'tax', 'ins'].includes(p.key))
+                  .map((p) => (
                   <li key={p.key} className="flex items-center justify-between gap-3 text-[15px]">
                     <span className="inline-flex items-center gap-2.5 text-ink-soft">
                       <span className="size-3 rounded-full" style={{ background: p.color }} aria-hidden />
@@ -262,14 +257,13 @@ export function AffordClient() {
               </ul>
               {b.pmi_applies && <p className="mt-3 text-sm text-sage-ink">PMI is included because the down payment is under 20%.</p>}
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {t ? (
                   [t.shorter, t.longer].map((x, i) => (
-                    <div key={x.term_years} className={`rounded-2xl border bg-surface p-4 ${x.term_years === term ? "border-primary ring-1 ring-primary" : "border-line"}`}>
+                    <div key={x.term_years} className={`rounded-2xl border bg-surface p-3 ${x.term_years === term ? "border-primary ring-1 ring-primary" : "border-line"}`}>
                       <p className="text-sm font-semibold text-ink">{x.term_years} years</p>
-                      <p className="font-display mt-1 text-2xl font-bold text-ink">{usd2(x.total_monthly)}<span className="text-base font-semibold text-ink-soft"> / mo</span></p>
-                      <p className="mt-1 text-sm text-ink-soft">{i === 0 ? "Higher payment, less total interest" : "Lower payment, more total interest"}</p>
-                      <p className="text-xs text-muted">Interest over the loan: {usd(x.total_interest_over_term)}</p>
+                      <p className="font-display text-xl font-bold text-ink">{usd2(x.total_monthly)}<span className="text-base font-semibold text-ink-soft"> / mo</span></p>
+                      <p className="mt-0.5 text-xs text-ink-soft">{i === 0 ? "Higher payment, less interest" : "Lower payment, more interest"}: {usd(x.total_interest_over_term)} over the loan</p>
                     </div>
                   ))
                 ) : (
@@ -281,30 +275,30 @@ export function AffordClient() {
                   The {t.shorter.term_years}-year loan costs {usd2(Math.abs(t.monthly_difference))} more each month and saves about {usd(t.interest_saved_by_shorter)} in interest.
                 </p>
               )}
-              <p className="mt-5 border-t border-sage-strong pt-4 text-xs text-sage-ink">{b.assumptions_note} Estimates are illustrative, not loan offers.</p>
+              <p className="mt-4 border-t border-sage-strong pt-3 text-xs text-sage-ink">{b.assumptions_note} Estimates are illustrative, not loan offers.</p>
             </>
           )}
         </section>
       </div>
 
       {/* ---------- how much could I afford ---------- */}
-      <section aria-label="How much home could I afford" className="mt-5 grid gap-6 rounded-card border border-line bg-surface p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <section aria-label="How much home could I afford" className="mt-4 grid gap-5 rounded-card border border-line bg-surface p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div>
-          <h2 className="font-display text-3xl font-bold text-ink">How much home could I afford?</h2>
+          <h2 className="font-display text-2xl font-bold text-ink">How much home could I afford?</h2>
           <p className="mt-2 max-w-[48ch] text-ink-soft">Based on your income, debts and down payment, see a price range that may fit your budget.</p>
-          <div className="mt-6 grid gap-x-5 gap-y-5 sm:grid-cols-2">
+          <div className="mt-4 grid gap-x-4 gap-y-3.5 sm:grid-cols-2">
             <Field id="income" label="Annual gross income" value={income} onChange={setIncome} prefix="$" />
             <Field id="debts" label="Monthly debt payments" value={debts} onChange={setDebts} prefix="$" hint="Cards, car loans, student loans." />
             <Field id="avail" label="Available down payment" value={avail} onChange={setAvail} prefix="$" />
             <div>
               <label htmlFor="dti" className="mb-1.5 block text-[13px] font-medium text-ink-soft">Max total debt-to-income</label>
-              <select id="dti" value={dti} onChange={(e) => setDtiIn(e.target.value)} className="h-11 w-full rounded-xl border border-line bg-canvas px-3 text-[15px] text-ink outline-none focus:border-primary">
+              <select id="dti" value={dti} onChange={(e) => setDtiIn(e.target.value)} className="h-10 w-full rounded-xl border border-line bg-canvas px-3 text-[15px] text-ink outline-none focus:border-primary focus:outline-none focus-visible:outline-none">
                 {[28, 33, 36, 41, 43, 45, 50].map((v) => (<option key={v} value={v}>{v}%</option>))}
               </select>
               <p className="mt-1 text-xs text-muted">Includes housing, debts and this new loan.</p>
             </div>
           </div>
-          <Button onClick={runAfford} disabled={!affordReady || afford.status === "loading"} size="lg" className="mt-6">
+          <Button onClick={runAfford} disabled={!affordReady || afford.status === "loading"} className="mt-5">
             {afford.status === "loading" ? "Estimating" : "Estimate affordability"}
           </Button>
         </div>
@@ -351,17 +345,29 @@ export function AffordClient() {
         </div>
       </section>
 
-      <section className="mt-5 flex flex-col gap-5 rounded-card bg-sage p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+      <section className="mt-4 flex flex-col gap-4 rounded-card bg-sage p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
         <div className="flex items-start gap-4">
-          <span className="grid size-12 shrink-0 place-items-center rounded-full bg-surface text-primary"><ChartBar size={26} aria-hidden /></span>
+          <span className="grid size-11 shrink-0 place-items-center rounded-full bg-surface text-primary"><ChartBar size={24} aria-hidden /></span>
           <div>
-            <h2 className="font-display text-2xl font-bold text-ink">Want to explore the tradeoffs?</h2>
-            <p className="mt-1 text-ink-soft">See how loan term and down payment change what you pay each month and overall.</p>
+            <h2 className="font-display text-xl font-bold text-ink">Ready to see homes in your range?</h2>
+            <p className="mt-1 text-ink-soft">
+              {afford.status === "done" && afford.data?.affordable && afford.data.max_home_price
+                ? `Browse homes up to about ${usd(afford.data.max_home_price)}, or line a few up side by side.`
+                : "Browse homes on the map, or line a few up side by side."}
+            </p>
           </div>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Button variant="secondary" onClick={() => askDomi("Explain the tradeoff between a 15 year and a 30 year mortgage")}>Explain 15 vs 30 years</Button>
-          <Button onClick={() => askDomi("How does a larger down payment change the monthly payment and PMI?")}>Compare down payments</Button>
+          <LinkButton variant="secondary" href="/compare">Compare homes</LinkButton>
+          <LinkButton
+            href={
+              afford.status === "done" && afford.data?.affordable && afford.data.max_home_price
+                ? `/explore?price_max=${Math.round(afford.data.max_home_price)}`
+                : "/explore"
+            }
+          >
+            Browse homes <ArrowRight size={16} weight="bold" aria-hidden />
+          </LinkButton>
         </div>
       </section>
     </div>

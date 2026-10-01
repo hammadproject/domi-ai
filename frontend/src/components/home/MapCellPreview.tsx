@@ -12,7 +12,7 @@ export function MapCellPreview() {
   const res = useAsync((s) => api.listings({ city: "Dallas", page_size: 50 }, s), "dallas-pins");
   const dallas = cities.data?.find((c) => c.city === "Dallas");
 
-  if (res.status === "loading" && !res.data) return <Skeleton className="mt-8 h-64 w-full rounded-3xl" />;
+  if (res.status === "loading" && !res.data) return <Skeleton className="mt-5 min-h-[16rem] w-full flex-1 rounded-3xl" />;
   if (!dallas || dallas.center_lat == null || dallas.center_lng == null) return null;
 
   // the six homes nearest the city centre, so the pins read as a cluster, framed around them
@@ -34,10 +34,11 @@ export function MapCellPreview() {
       lat={(Math.max(...lats) + Math.min(...lats)) / 2}
       lng={(Math.max(...lngs) + Math.min(...lngs)) / 2}
       zoom={zoom}
-      maxW={520}
-      maxH={300}
+      maxW={560}
+      maxH={640}
+      eager
       pins={near.map((l) => ({ lat: l.lat!, lng: l.lng!, label: usdCompact(l.price) }))}
-      className="mt-8 h-64 w-full rounded-3xl border border-on-primary/15"
+      className="mt-5 min-h-[16rem] w-full flex-1 rounded-3xl border border-on-primary/15"
     />
   );
 }

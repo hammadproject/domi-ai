@@ -44,6 +44,7 @@ export function ListingMap({ listings, pickedIds, selectedId, hoveredId, onSelec
   useEffect(() => {
     let cancelled = false;
     let map: LeafletMap | null = null;
+    let resizeObs: ResizeObserver | null = null;
     (async () => {
       const L = (await import("leaflet")).default;
       if (cancelled || !containerRef.current) return;
@@ -60,11 +61,15 @@ export function ListingMap({ listings, pickedIds, selectedId, hoveredId, onSelec
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(map);
       mapRef.current = map;
+      // the map pane changes width when the chat opens or closes
+      resizeObs = new ResizeObserver(() => map?.invalidateSize({ animate: false }));
+      resizeObs.observe(containerRef.current);
       setReady(true);
     })();
     const markers = markersRef.current;
     return () => {
       cancelled = true;
+      resizeObs?.disconnect();
       markers.clear();
       map?.remove();
       mapRef.current = null;

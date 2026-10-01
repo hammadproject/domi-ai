@@ -23,16 +23,20 @@ Checks: `npm run lint`, `npx tsc --noEmit`, `npm run build`.
 | Route | What it is |
 |---|---|
 | `/` | Landing: hero search, bento features, how it works, city cards (live stats), closing banner |
-| `/explore` | Filters, list, Leaflet map with price pins, "Ask Domi" chat. `?view=grid` is the grid-only view |
+| `/explore` | Filters (one row), list and Leaflet map 50/50, price pins. "Ask Domi" is a widget: closed by default, opens as a side panel and the map compresses. `?view=grid` is the grid-only view |
 | `/listings/[id]` | Detail: location views, facts, live monthly estimate, "Ask Domi about this home" |
-| `/compare?id=...&id=...` | 2-3 homes side by side, best-value cells, tool-derived tradeoffs, shared payment assumptions |
-| `/affordability` | Mortgage calculator, 15 vs 30 year comparison, "how much could I afford" |
+| `/compare?id=...&id=...` | 2-3 homes as aligned cards, best-value cells, tool-derived tradeoffs, shared payment assumptions, same collapsible Ask Domi widget |
+| `/affordability` | Mortgage calculator, 15 vs 30 year comparison, "how much could I afford". No Ask Domi on this page, by design |
 
 ## Notes
 
-- **No listing photos.** The RentCast data has none, so cards and galleries show a real OpenStreetMap
-  view of each home's coordinates (plain tile images, no map instance per card). Add a photo source
-  and swap `ListingCard` / the detail gallery when you have one.
+- **No listing photos.** The RentCast data has none, so cards show a real OpenStreetMap view of each
+  home's coordinates (zoomed closer for condos and multi-family, with a house / building / tree pin by
+  property type). To show distinct photos, add image files to `public/home-photos/` and list them in
+  `manifest.json`: each listing gets one from the pool by a stable hash of its id (see that folder's
+  README). Pool photos are not photos of the listed home, so label them illustrative.
+- **Answers are structured.** Domi's replies are a one-sentence lead-in plus short bullets, and the
+  homes appear as cards below (`components/chat/RichText.tsx` renders `- ` / `+ ` / `1. ` lines).
 - **Map tiles** come from `tile.openstreetmap.org`, fine for development and light use. Use a hosted
   tile provider before real traffic (see OSM's tile usage policy).
 - **Chat <-> page sync.** The page sends its current filters and selected homes with each chat

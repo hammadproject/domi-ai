@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, X } from "@phosphor-icons/react";
+import { ArrowRight, Scales, X } from "@phosphor-icons/react";
 import { TileMap } from "@/components/map/TileMap";
 import { street, usd } from "@/lib/format";
 import { useCompare } from "@/state/compare";
@@ -45,12 +45,16 @@ export function CompareTray({ lifted = false }: { lifted?: boolean }) {
       {ready ? (
         <Link
           href={href}
-          className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-medium text-on-primary transition-[background-color,transform] hover:bg-primary-hover active:scale-[0.98]"
+          className="inline-flex h-12 shrink-0 items-center justify-center gap-2.5 whitespace-nowrap rounded-full bg-primary px-6 text-[15px] font-semibold text-on-primary shadow-soft transition-[background-color,transform,box-shadow] hover:bg-primary-hover hover:shadow-lift active:scale-[0.97]"
         >
-          Compare homes <ArrowRight size={16} weight="bold" aria-hidden />
+          <Scales size={20} aria-hidden />
+          Compare {items.length} homes
+          <ArrowRight size={16} weight="bold" aria-hidden />
         </Link>
       ) : (
-        <span className="shrink-0 text-sm text-muted">Pick one more to compare</span>
+        <span className="inline-flex h-12 shrink-0 items-center gap-2 rounded-full border border-dashed border-line px-5 text-sm text-muted">
+          <Scales size={18} aria-hidden /> Pick one more to compare
+        </span>
       )}
     </div>
   );

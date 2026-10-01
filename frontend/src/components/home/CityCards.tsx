@@ -20,14 +20,17 @@ function CityCard({ name, state, stats, className }: { name: string; state: stri
       href={`/explore?city=${name}`}
       className={`group relative isolate block overflow-hidden rounded-[28px] border border-line bg-surface-2 ${className}`}
     >
-      <TileMap
-        lat={stats?.center_lat}
-        lng={stats?.center_lng}
-        zoom={11}
-        maxW={900}
-        maxH={520}
-        className="absolute inset-0 transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:scale-105"
-      />
+      <div className="absolute inset-0 transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:scale-105">
+        <TileMap
+          lat={stats?.center_lat}
+          lng={stats?.center_lng}
+          zoom={11}
+          maxW={900}
+          maxH={520}
+          eager
+          className="h-full w-full"
+        />
+      </div>
       <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#0c1a13]/85 via-[#0c1a13]/25 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5 sm:p-6">
         <div>
@@ -54,7 +57,7 @@ export function CityCards() {
   const cities = useAsync((s) => api.cities(s), "cities");
   const by = (n: string) => cities.data?.find((c) => c.city === n);
   return (
-    <div className="grid gap-4 md:grid-cols-5 md:grid-rows-2">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-5 md:grid-rows-2">
       <CityCard name="Austin" state="TX" stats={by("Austin")} className="min-h-[300px] md:col-span-3 md:row-span-2 md:min-h-[460px]" />
       <CityCard name="Dallas" state="TX" stats={by("Dallas")} className="min-h-[220px] md:col-span-2" />
       <CityCard name="Phoenix" state="AZ" stats={by("Phoenix")} className="min-h-[220px] md:col-span-2" />

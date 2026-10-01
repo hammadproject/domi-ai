@@ -13,7 +13,9 @@ import {
   Trash,
   X,
 } from "@phosphor-icons/react";
-import { TileMap } from "@/components/map/TileMap";
+import { RichText } from "@/components/chat/RichText";
+import { Chip } from "@/components/ui/Chip";
+import { TileMap, pinKindOf } from "@/components/map/TileMap";
 import { listingHref } from "@/components/listing/ListingCard";
 import { homeFacts, street, usd } from "@/lib/format";
 import type { ChatListing, Listing } from "@/lib/types";
@@ -30,12 +32,12 @@ const DEFAULT_SUGGESTIONS: Suggestion[] = [
 function MiniListing({ l, onShowOnMap }: { l: ChatListing; onShowOnMap?: (id: string) => void }) {
   return (
     <div className="flex gap-3 rounded-2xl border border-line bg-canvas p-2">
-      <TileMap lat={l.lat} lng={l.lng} zoom={15} maxW={140} maxH={140} centerPin className="size-[72px] shrink-0 rounded-xl" />
+      <TileMap lat={l.lat} lng={l.lng} zoom={16} maxW={140} maxH={140} centerPin pinKind={pinKindOf(l.property_type)} className="size-[72px] shrink-0 rounded-xl" />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-ink">
           <span className="text-ink-soft">#{l.rank}</span> {usd(l.price)}
         </p>
-        <p className="truncate text-[13px] text-ink-soft">{street(l)}</p>
+        <p className="text-[13px] leading-snug text-ink-soft">{street(l)}</p>
         <p className="truncate text-xs text-muted">{homeFacts(l)}</p>
         <div className="mt-1 flex gap-3 text-xs font-medium">
           <Link href={listingHref(l.id)} className="text-sage-ink underline underline-offset-2 hover:text-ink">
@@ -101,7 +103,7 @@ function Bubble({
         ) : (
           <>
             {m.text ? (
-              <p className="whitespace-pre-line text-[15px] leading-relaxed text-ink">{m.text}</p>
+              <RichText text={m.text} />
             ) : (
               <p className="inline-flex items-center gap-1 text-ink-soft" aria-label="Domi is thinking">
                 <span className="typing-dot" />
@@ -131,12 +133,17 @@ export function ChatPanel({
   onClose,
   onShowOnMap,
   suggestions,
+  filterChips,
+  onResetFilters,
   className = "",
 }: {
   variant?: "panel" | "drawer";
   onClose?: () => void;
   onShowOnMap?: (id: string) => void;
   suggestions?: Suggestion[];
+  /** The filters currently applied on the page, as removable pills (same style as the filter bar). */
+  filterChips?: { label: string; clear: () => void }[];
+  onResetFilters?: () => void;
   className?: string;
 }) {
   const chat = useChat();
@@ -251,6 +258,23 @@ export function ChatPanel({
           </div>
         )}
 
+        {filterChips && filterChips.length > 0 && (
+          <ul className="mb-2.5 flex items-center gap-1.5 overflow-x-auto pb-1" aria-label="Active filters">
+            {filterChips.map((c) => (
+              <li key={c.label} className="shrink-0 whitespace-nowrap">
+                <Chip onRemove={c.clear} className="!py-1 text-[13px]">{c.label}</Chip>
+              </li>
+            ))}
+            {onResetFilters && (
+              <li className="shrink-0">
+                <button type="button" onClick={onResetFilters} className="whitespace-nowrap px-1.5 text-xs font-medium text-sage-ink underline underline-offset-4 hover:text-ink">
+                  Reset
+                </button>
+              </li>
+            )}
+          </ul>
+        )}
+
         {ctxLabel && (
           <div className="mb-2 inline-flex max-w-full items-center gap-2 rounded-full bg-sage px-3 py-1 text-sm text-sage-ink">
             <MapPin size={14} aria-hidden />
@@ -295,7 +319,7 @@ export function ChatPanel({
             </button>
           )}
         </form>
-        <p className="mt-2 px-1 text-[11.5px] leading-snug text-muted">
+        <p className="mt-1.5 px-1 text-[11px] leading-snug text-muted">
           Please don&apos;t share personal details. Estimates are illustrative, not loan offers.
         </p>
       </div>

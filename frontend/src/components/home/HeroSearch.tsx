@@ -26,7 +26,7 @@ export function HeroSearch() {
       <form
         onSubmit={submit}
         role="search"
-        className="flex w-full max-w-[560px] items-center gap-2 rounded-full border border-line bg-surface p-1.5 pl-5 shadow-soft transition-shadow focus-within:border-primary focus-within:shadow-lift"
+        className="focus-ring-within flex w-full max-w-[560px] items-center gap-2 rounded-full border border-line bg-surface p-1.5 pl-5 shadow-soft"
       >
         <MagnifyingGlass size={20} className="shrink-0 text-ink-soft" aria-hidden />
         <label htmlFor="hero-search" className="sr-only">
@@ -39,7 +39,7 @@ export function HeroSearch() {
           maxLength={200}
           placeholder="3 bedroom homes in Austin under $550k"
           autoComplete="off"
-          className="h-11 min-w-0 flex-1 bg-transparent text-[15px] text-ink outline-none placeholder:text-muted"
+          className="h-11 min-w-0 flex-1 appearance-none rounded-none border-0 bg-transparent text-[15px] text-ink shadow-none outline-none focus:outline-none focus-visible:outline-none placeholder:text-muted"
         />
         <button
           type="submit"
@@ -48,7 +48,7 @@ export function HeroSearch() {
           Find homes <ArrowRight size={16} weight="bold" aria-hidden />
         </button>
       </form>
-      <ul className="mt-4 flex flex-wrap gap-2.5" aria-label="Start with a city">
+      <ul className="mt-3 flex flex-wrap gap-2.5" aria-label="Start with a city">
         {CITIES.map((c) => (
           <li key={c.name}>
             <Link

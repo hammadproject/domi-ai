@@ -25,7 +25,7 @@ export function PaymentMini() {
           <p className="text-sm text-ink-soft">
             A {usd(b.price)} home, {b.down_payment_pct}% down, {b.term_years}-year loan
           </p>
-          <p className="mt-1 font-display text-5xl font-bold leading-none text-ink">
+          <p className="mt-1 font-display text-4xl font-bold leading-none text-ink sm:text-5xl">
             {usd2(b.total_monthly)}
             <span className="text-2xl font-semibold text-ink-soft"> / mo</span>
           </p>

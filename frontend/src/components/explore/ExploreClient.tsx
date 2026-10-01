@@ -16,11 +16,12 @@ import {
 } from "@phosphor-icons/react";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { CompareTray } from "@/components/explore/CompareTray";
-import { FilterBar, SORTS } from "@/components/explore/FilterBar";
+import { FilterBar, SORTS, activeFilterChips } from "@/components/explore/FilterBar";
 import { ListingCard, listingHref } from "@/components/listing/ListingCard";
 import { ListingMap } from "@/components/map/ListingMap";
 import { TileMap } from "@/components/map/TileMap";
 import { Button } from "@/components/ui/Button";
+import { Chip } from "@/components/ui/Chip";
 import { Select } from "@/components/ui/Select";
 import { ListingCardSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState, ErrorState } from "@/components/ui/States";
@@ -104,6 +105,8 @@ export function ExploreClient() {
   const [tab, setTab] = useState<Tab>("list");
   const [selectedId, setSelectedId] = useState<string | null>(focusParam);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  // The chat is a widget: closed by default so the list and map get the room.
+  const [chatOpen, setChatOpen] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
   const split = filters.view === "split";
@@ -133,6 +136,7 @@ export function ExploreClient() {
     const next = new URLSearchParams(searchParams.toString());
     next.delete("q");
     router.replace(`/explore?${next.toString()}`, { scroll: false });
+    setChatOpen(true);
     setTab("chat");
     void sendChat(q);
   }, [q, searchParams, router, sendChat]);
@@ -217,8 +221,10 @@ export function ExploreClient() {
 
   const askAbout = (l: Listing) => {
     chat.setContext([l]);
-    if (split) setTab("chat");
-    else chat.openDrawer();
+    if (split) {
+      setChatOpen(true);
+      setTab("chat");
+    } else chat.openDrawer();
   };
 
   const fitKey = `${items.map((i) => i.id).join(",")}#${chat.highlightIds.join(",")}`;
@@ -243,6 +249,8 @@ export function ExploreClient() {
     />
   );
 
+  const chips = activeFilterChips(filters, (p) => update(p));
+
   const emptyState = (
     <EmptyState
       title="No exact matches yet"
@@ -258,22 +266,22 @@ export function ExploreClient() {
   const errorState = <ErrorState error={results.error} onRetry={results.reload} title="We couldn't load homes" />;
 
   const header = (
-    <div className="flex flex-wrap items-center justify-between gap-3 px-1 pb-3">
-      <h2 className="font-display text-3xl font-bold text-ink" aria-live="polite">
+    <div className="flex flex-wrap items-center justify-between gap-3 px-1 pb-2">
+      <h2 className="font-display text-2xl font-bold text-ink" aria-live="polite">
         {loading ? "Finding homes" : failed ? "Homes" : `${total.toLocaleString("en-US")} ${total === 1 ? "matching home" : "matching homes"}`}
       </h2>
       <div className="flex items-center gap-2">
-        <Select label="Sort results" value={filters.sort} options={SORTS} onChange={(v) => update({ sort: v as ExploreFilters["sort"] })} className="min-w-[11.5rem]" />
+        <Select label="Sort results" value={filters.sort} options={SORTS} onChange={(v) => update({ sort: v as ExploreFilters["sort"] })} />
       </div>
     </div>
   );
 
   return (
-    <div className={`mx-auto w-full max-w-[1400px] px-4 pt-8 sm:px-8 ${split ? "pb-28 lg:pb-24" : "pb-28"}`}>
+    <div className={`mx-auto w-full max-w-[1400px] px-4 pt-5 sm:px-8 ${split ? "pb-24 lg:pb-16" : "pb-24"}`}>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-4xl font-bold text-ink sm:text-5xl">Let&apos;s find your place.</h1>
-          <p className="mt-2 text-lg text-ink-soft">Search, refine, and explore with Domi.</p>
+          <h1 className="font-display text-3xl font-bold text-ink sm:text-4xl">Let&apos;s find your place.</h1>
+          <p className="mt-1 text-ink-soft">Search, refine, and explore with Domi.</p>
         </div>
         <div className="hidden items-center rounded-full border border-line bg-surface p-1 sm:flex" role="group" aria-label="View">
           <button type="button" onClick={() => update({ view: "split" }, true)} aria-pressed={split} className={`inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium ${split ? "bg-sage text-sage-ink" : "text-ink-soft hover:text-ink"}`}>
@@ -285,9 +293,23 @@ export function ExploreClient() {
         </div>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-4">
         <FilterBar filters={filters} cities={cities.data} onChange={(p) => update(p)} onReset={reset} moreOpen={moreOpen} onToggleMore={() => setMoreOpen((v) => !v)} />
       </div>
+      {chips.length > 0 && (
+        <ul className="mt-3 flex flex-wrap items-center gap-2" aria-label="Active filters">
+          {chips.map((c) => (
+            <li key={c.label}>
+              <Chip onRemove={c.clear}>{c.label}</Chip>
+            </li>
+          ))}
+          <li>
+            <button type="button" onClick={reset} className="px-2 text-sm font-medium text-sage-ink underline underline-offset-4 hover:text-ink">
+              Reset filters
+            </button>
+          </li>
+        </ul>
+      )}
 
       {!split && (
         <div className="mt-8">
@@ -306,7 +328,11 @@ export function ExploreClient() {
       )}
 
       {split && (
-        <div className="mt-6 lg:grid lg:h-[calc(100dvh-19.5rem)] lg:min-h-[640px] lg:grid-cols-[minmax(330px,410px)_minmax(0,1fr)_minmax(330px,390px)] lg:gap-4">
+        <div
+          className={`mt-4 lg:grid lg:h-[calc(100dvh-17.5rem)] lg:min-h-[380px] lg:gap-4 ${
+            chatOpen ? "lg:grid-cols-[minmax(340px,0.85fr)_minmax(0,1fr)_minmax(340px,380px)]" : "lg:grid-cols-2"
+          }`}
+        >
           {/* list */}
           <section aria-label="Results" className={`${tab === "list" ? "block" : "hidden"} min-h-0 flex-col lg:flex`}>
             <div className="flex min-h-0 flex-1 flex-col rounded-card border border-line bg-canvas/50 p-3 lg:overflow-hidden">
@@ -323,7 +349,7 @@ export function ExploreClient() {
           </section>
 
           {/* map */}
-          <section aria-label="Map" className={`${tab === "map" ? "block" : "hidden"} h-[calc(100dvh-16rem)] min-h-[420px] lg:block lg:h-auto`}>
+          <section aria-label="Map" className={`${tab === "map" ? "block" : "hidden"} h-[calc(100dvh-16rem)] min-h-[420px] lg:block lg:h-auto lg:min-h-0`}>
             <div className="relative h-full overflow-hidden rounded-card border border-line">
               <ListingMap
                 listings={mapListings}
@@ -338,10 +364,19 @@ export function ExploreClient() {
             </div>
           </section>
 
-          {/* chat */}
-          <section aria-label="Ask Domi" className={`${tab === "chat" ? "block" : "hidden"} h-[calc(100dvh-14rem)] min-h-[460px] lg:block lg:h-auto`}>
+          {/* chat widget: a tab on small screens, a third pane (opened from the button) on large ones */}
+          <section
+            aria-label="Ask Domi"
+            className={`${tab === "chat" ? "block" : "hidden"} ${chatOpen ? "lg:block" : "lg:hidden"} h-[calc(100dvh-14rem)] min-h-[460px] lg:h-auto lg:min-h-0`}
+          >
             <ChatPanel
               className="h-full"
+              filterChips={chips}
+              onResetFilters={reset}
+              onClose={() => {
+                setChatOpen(false);
+                setTab("list");
+              }}
               onShowOnMap={(id) => {
                 setSelectedId(id);
                 setTab("map");
@@ -349,6 +384,16 @@ export function ExploreClient() {
             />
           </section>
         </div>
+      )}
+
+      {split && !chatOpen && (
+        <button
+          type="button"
+          onClick={() => setChatOpen(true)}
+          className={`fixed right-5 z-[var(--z-fab,35)] hidden h-12 items-center gap-2 rounded-full bg-primary px-5 text-[15px] font-medium text-on-primary shadow-lift transition-[background-color,transform] hover:bg-primary-hover active:scale-[0.97] lg:inline-flex ${compare.items.length > 0 ? "bottom-24" : "bottom-5"}`}
+        >
+          <ChatCircleDots size={20} aria-hidden /> Ask Domi
+        </button>
       )}
 
       <CompareTray lifted={split} />

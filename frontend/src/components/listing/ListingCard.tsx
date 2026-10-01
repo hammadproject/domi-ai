@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, Bathtub, Bed, ChatCircleDots, Ruler } from "@phosphor-icons/react";
-import { TileMap } from "@/components/map/TileMap";
+import { ListingMedia } from "@/components/listing/ListingMedia";
 import { cityLine, homeFacts, num, street, usd } from "@/lib/format";
 import type { Listing } from "@/lib/types";
 
@@ -79,11 +79,11 @@ export function ListingCard({
         className={`group flex flex-col rounded-card border bg-surface p-3 shadow-soft transition-[transform,box-shadow,border-color] duration-300 ease-[var(--ease-out-expo)] hover:-translate-y-0.5 hover:shadow-lift ${ring}`}
       >
         <Link href={href} tabIndex={-1} aria-hidden className="block">
-          <TileMap lat={l.lat} lng={l.lng} zoom={15} maxW={420} maxH={200} centerPin className="h-44 w-full rounded-2xl" />
+          <ListingMedia listing={l} maxW={420} maxH={200} className="h-44 w-full rounded-2xl" />
         </Link>
         <div className="px-1.5 pb-1 pt-4">
           <p className="font-display text-[28px] font-bold leading-none text-ink">{usd(l.price)}</p>
-          <h3 className="mt-2 truncate text-[15px] font-medium text-ink">{street(l)}</h3>
+          <h3 className="mt-2 break-words text-[15px] font-medium leading-snug text-ink">{street(l)}</h3>
           <p className="text-sm text-muted">{cityLine(l)}</p>
           <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-soft">
             {l.beds != null && (
@@ -131,11 +131,11 @@ export function ListingCard({
         aria-label={`Show ${street(l)} on the map`}
         className="block h-auto w-[132px] shrink-0 self-stretch overflow-hidden rounded-2xl sm:w-[156px]"
       >
-        <TileMap lat={l.lat} lng={l.lng} zoom={15} maxW={200} maxH={200} centerPin className="h-full min-h-[148px] w-full" />
+        <ListingMedia listing={l} maxW={200} maxH={200} className="h-full min-h-[148px] w-full" />
       </button>
       <div className="flex min-w-0 flex-1 flex-col">
         <p className="font-display text-[26px] font-bold leading-none text-ink">{usd(l.price)}</p>
-        <h3 className="mt-1.5 truncate text-[15px] font-medium text-ink">{street(l)}</h3>
+        <h3 className="mt-1.5 break-words text-[15px] font-medium leading-snug text-ink">{street(l)}</h3>
         <p className="truncate text-sm text-muted">{cityLine(l)}</p>
         <p className="mt-1.5 text-sm text-ink-soft">{homeFacts(l)}</p>
         <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-3">

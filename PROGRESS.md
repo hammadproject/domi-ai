@@ -84,3 +84,12 @@ Everything is pushed to `origin/main` except this file.
 - The reranker is warmed in the background at server start.
 - No listing photos exist in the data; maps stand in (see `frontend/README.md`).
 - Added deps (approved): `@phosphor-icons/react`, `motion`; plus `leaflet`, Next, Tailwind from plan.md.
+
+## UI polish pass (after Phase 8)
+
+- Landing: hero fits a laptop viewport; clean focus ring (the global focus style is now in `@layer base`, so utilities can override it); map cell fills its card; city cards show maps (the old `relative`/`absolute` class clash gave them zero height).
+- Explore: filters in one row of whole controls; list and map 50/50; Ask Domi is a collapsible widget that squeezes the map; its filter pills come from the active filters.
+- Compare: card layout with aligned rows and best-value pills, same chat widget. Affordability: denser, and no chat at all.
+- Listing data: all 300 addresses are unique (real RentCast data). Units in one building share a street line and coordinates; cards now show the full unit line. Photos: no source exists, so a photo-pool mechanism is in place (`frontend/public/home-photos/`) and maps are the fallback.
+- Themed scrollbars; redesigned footer.
+- Chat answers are now a lead-in sentence plus bullets (generation prompt, tool outputs and the output guard all keep that structure); homes show as cards.

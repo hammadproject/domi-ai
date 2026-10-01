@@ -1,6 +1,16 @@
-import { House } from "@phosphor-icons/react/ssr";
+import { Buildings, House, Tree } from "@phosphor-icons/react/ssr";
 import type { ReactNode } from "react";
 import { offsetFromCenter, tilesAround } from "@/lib/tiles";
+
+export type PinKind = "house" | "building" | "land";
+
+export function pinKindOf(propertyType: string | null | undefined): PinKind {
+  if (propertyType === "Condo" || propertyType === "Apartment" || propertyType === "Multi-Family") return "building";
+  if (propertyType === "Land") return "land";
+  return "house";
+}
+
+const PIN_ICON = { house: House, building: Buildings, land: Tree } as const;
 
 export interface StaticPin {
   lat: number;
@@ -24,6 +34,7 @@ export function TileMap({
   maxH = 280,
   pins = [],
   centerPin = false,
+  pinKind = "house",
   eager = false,
   className = "",
   children,
@@ -35,6 +46,7 @@ export function TileMap({
   maxH?: number;
   pins?: StaticPin[];
   centerPin?: boolean;
+  pinKind?: PinKind;
   /** Load tiles immediately (above the fold) instead of lazily. */
   eager?: boolean;
   className?: string;
@@ -85,7 +97,10 @@ export function TileMap({
       })}
       {centerPin && (
         <span className="absolute left-1/2 top-1/2 grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-primary text-on-primary shadow-lift ring-4 ring-surface/80">
-          <House size={18} weight="fill" aria-hidden />
+          {(() => {
+            const Icon = PIN_ICON[pinKind];
+            return <Icon size={18} weight="fill" aria-hidden />;
+          })()}
         </span>
       )}
       {children}

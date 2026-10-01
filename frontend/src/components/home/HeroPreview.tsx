@@ -24,7 +24,12 @@ export function HeroPreview() {
   );
   const austin = cities.data?.find((c) => c.city === EXAMPLE.city);
   const items = (res.data?.items ?? []).filter((l) => l.lat != null && l.lng != null);
-  const pinSample = items.filter((_, i) => i % Math.max(1, Math.floor(items.length / 7)) === 0).slice(0, 7);
+  // the seven homes nearest the map centre, so the pins are on screen and read as a cluster
+  const cLat = austin?.center_lat ?? 30.2672;
+  const cLng = austin?.center_lng ?? -97.7431;
+  const pinSample = [...items]
+    .sort((a, b) => Math.hypot(a.lat! - cLat, (a.lng! - cLng) * 0.85) - Math.hypot(b.lat! - cLat, (b.lng! - cLng) * 0.85))
+    .slice(0, 7);
   const top = res.data?.items[0];
   const loading = res.status === "loading" && !res.data;
 
@@ -33,7 +38,7 @@ export function HeroPreview() {
       <div aria-hidden className="absolute -left-4 -top-4 h-2/3 w-2/3 rounded-[40px] bg-sage" />
       <div className="relative overflow-hidden rounded-[32px] border border-line shadow-lift">
         {loading ? (
-          <Skeleton className="aspect-[5/6] w-full rounded-none sm:aspect-[6/5]" />
+          <Skeleton className="h-[360px] w-full rounded-none sm:h-[420px] lg:h-[min(500px,calc(100dvh-9.5rem))]" />
         ) : (
           <TileMap
             lat={austin?.center_lat ?? 30.2672}
@@ -43,7 +48,7 @@ export function HeroPreview() {
             maxH={620}
             eager
             pins={pinSample.map((l) => ({ lat: l.lat!, lng: l.lng!, label: usdCompact(l.price) }))}
-            className="aspect-[5/6] w-full sm:aspect-[6/5]"
+            className="h-[360px] w-full sm:h-[420px] lg:h-[min(500px,calc(100dvh-9.5rem))]"
           />
         )}
 
