@@ -252,6 +252,13 @@ body {
 }
 
 /* ---------- Leaflet chrome ---------- */
+.domi-map.leaflet-container { cursor: grab; }
+.domi-map.leaflet-dragging .leaflet-grab,
+.domi-map.leaflet-dragging.leaflet-container,
+.domi-map.is-panning,
+.domi-map.is-panning * { cursor: grabbing !important; }
+.domi-map .leaflet-interactive { cursor: pointer; }
+
 .domi-map {
   background: var(--surface-2);
   font-family: var(--font-sans);

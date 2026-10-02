@@ -39,8 +39,6 @@ export function ListingMap({ listings, pickedIds, selectedId, hoveredId, onSelec
     onSelectRef.current = onSelect;
   });
   const [ready, setReady] = useState(false);
-  const [hint, setHint] = useState(false);
-  const hintTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // create the map once
   useEffect(() => {
@@ -55,7 +53,7 @@ export function ListingMap({ listings, pickedIds, selectedId, hoveredId, onSelec
       map = L.map(containerRef.current, {
         zoomControl: false,
         attributionControl: false,
-        scrollWheelZoom: false, // plain wheel scrolls the page; Ctrl/Cmd+wheel zooms (below)
+        scrollWheelZoom: false, // handled below so the page never scrolls over the map
       }).setView([32.3, -97.5], 6);
       L.control.zoom({ position: "bottomleft" }).addTo(map);
       L.control.attribution({ prefix: false, position: "bottomright" }).addTo(map);
@@ -65,22 +63,46 @@ export function ListingMap({ listings, pickedIds, selectedId, hoveredId, onSelec
       }).addTo(map);
       mapRef.current = map;
       const el = containerRef.current;
+      // wheel zooms the map only (never scrolls the page while the pointer is over it)
       let lastZoom = 0;
       const onWheel = (e: WheelEvent) => {
-        if (e.ctrlKey || e.metaKey) {
-          e.preventDefault(); // also stops browser page-zoom on trackpad pinch
-          const now = Date.now();
-          if (now - lastZoom < 80) return;
-          lastZoom = now;
-          map?.setZoomAround(map.mouseEventToContainerPoint(e), map.getZoom() + (e.deltaY < 0 ? 1 : -1));
-        } else {
-          setHint(true);
-          clearTimeout(hintTimer.current);
-          hintTimer.current = setTimeout(() => setHint(false), 1400);
-        }
+        e.preventDefault();
+        const now = Date.now();
+        if (now - lastZoom < 80) return;
+        lastZoom = now;
+        map?.setZoomAround(map.mouseEventToContainerPoint(e), map.getZoom() + (e.deltaY < 0 ? 1 : -1));
       };
+      // Leaflet drags with the left button; add right and middle button drag
+      let last: { x: number; y: number } | null = null;
+      const onDown = (e: MouseEvent) => {
+        if (e.button !== 1 && e.button !== 2) return;
+        if ((e.target as HTMLElement).closest(".leaflet-control")) return;
+        e.preventDefault(); // no middle-click autoscroll
+        last = { x: e.clientX, y: e.clientY };
+        el.classList.add("is-panning");
+      };
+      const onMove = (e: MouseEvent) => {
+        if (!last) return;
+        map?.panBy([last.x - e.clientX, last.y - e.clientY], { animate: false });
+        last = { x: e.clientX, y: e.clientY };
+      };
+      const onUp = () => {
+        last = null;
+        el.classList.remove("is-panning");
+      };
+      const onMenu = (e: Event) => e.preventDefault();
       el.addEventListener("wheel", onWheel, { passive: false });
-      removeWheel = () => el.removeEventListener("wheel", onWheel);
+      el.addEventListener("mousedown", onDown);
+      el.addEventListener("contextmenu", onMenu);
+      window.addEventListener("mousemove", onMove);
+      window.addEventListener("mouseup", onUp);
+      removeWheel = () => {
+        el.removeEventListener("wheel", onWheel);
+        el.removeEventListener("mousedown", onDown);
+        el.removeEventListener("contextmenu", onMenu);
+        window.removeEventListener("mousemove", onMove);
+        window.removeEventListener("mouseup", onUp);
+      };
       // the map pane changes width when the chat opens or closes
       resizeObs = new ResizeObserver(() => map?.invalidateSize({ animate: false }));
       resizeObs.observe(containerRef.current);
@@ -91,7 +113,6 @@ export function ListingMap({ listings, pickedIds, selectedId, hoveredId, onSelec
       cancelled = true;
       resizeObs?.disconnect();
       removeWheel?.();
-      clearTimeout(hintTimer.current);
       markers.clear();
       map?.remove();
       mapRef.current = null;
@@ -177,14 +198,6 @@ export function ListingMap({ listings, pickedIds, selectedId, hoveredId, onSelec
   return (
     <div className={`relative isolate overflow-hidden ${className}`}>
       <div ref={containerRef} className="domi-map absolute inset-0" role="region" aria-label="Map of matching homes" />
-      <div
-        aria-hidden
-        className={`pointer-events-none absolute inset-0 z-[600] grid place-items-center bg-ink/30 transition-opacity duration-200 ${hint ? "opacity-100" : "opacity-0"}`}
-      >
-        <p className="rounded-full bg-surface px-4 py-2 text-sm font-medium text-ink shadow-lift">
-          Hold Ctrl (⌘ on Mac) and scroll to zoom
-        </p>
-      </div>
       <button
         type="button"
         onClick={fitAll}
