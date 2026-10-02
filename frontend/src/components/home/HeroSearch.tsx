@@ -9,6 +9,8 @@ const CITIES = [
   { name: "Austin", label: "Austin, TX" },
   { name: "Dallas", label: "Dallas, TX" },
   { name: "Phoenix", label: "Phoenix, AZ" },
+  { name: "Houston", label: "Houston, TX" },
+  { name: "San Antonio", label: "San Antonio, TX" },
 ];
 
 export function HeroSearch() {
@@ -52,7 +54,7 @@ export function HeroSearch() {
         {CITIES.map((c) => (
           <li key={c.name}>
             <Link
-              href={`/explore?city=${c.name}`}
+              href={`/explore?city=${encodeURIComponent(c.name)}`}
               className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-sage"
             >
               <MapPin size={16} aria-hidden /> {c.label}

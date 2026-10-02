@@ -8,16 +8,10 @@ import { usd } from "@/lib/format";
 import type { CityStats } from "@/lib/types";
 import { useAsync } from "@/lib/use-async";
 
-const CITIES = [
-  { name: "Austin", state: "TX" },
-  { name: "Dallas", state: "TX" },
-  { name: "Phoenix", state: "AZ" },
-] as const;
-
 function CityCard({ name, state, stats, className }: { name: string; state: string; stats?: CityStats; className: string }) {
   return (
     <Link
-      href={`/explore?city=${name}`}
+      href={`/explore?city=${encodeURIComponent(name)}`}
       className={`group relative isolate block overflow-hidden rounded-[28px] border border-line bg-surface-2 ${className}`}
     >
       <div className="absolute inset-0 transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:scale-105">
@@ -57,12 +51,12 @@ export function CityCards() {
   const cities = useAsync((s) => api.cities(s), "cities");
   const by = (n: string) => cities.data?.find((c) => c.city === n);
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-5 md:grid-rows-2">
-      <CityCard name="Austin" state="TX" stats={by("Austin")} className="min-h-[300px] md:col-span-3 md:row-span-2 md:min-h-[460px]" />
-      <CityCard name="Dallas" state="TX" stats={by("Dallas")} className="min-h-[220px] md:col-span-2" />
-      <CityCard name="Phoenix" state="AZ" stats={by("Phoenix")} className="min-h-[220px] md:col-span-2" />
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
+      <CityCard name="Austin" state="TX" stats={by("Austin")} className="min-h-[260px] md:col-span-4 md:row-span-2 md:min-h-[440px]" />
+      <CityCard name="Dallas" state="TX" stats={by("Dallas")} className="min-h-[200px] md:col-span-2" />
+      <CityCard name="Phoenix" state="AZ" stats={by("Phoenix")} className="min-h-[200px] md:col-span-2" />
+      <CityCard name="Houston" state="TX" stats={by("Houston")} className="min-h-[200px] md:col-span-3" />
+      <CityCard name="San Antonio" state="TX" stats={by("San Antonio")} className="min-h-[200px] md:col-span-3" />
     </div>
   );
 }
-
-export { CITIES };

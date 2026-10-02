@@ -5,7 +5,7 @@ import { ListingCardSkeleton, Skeleton } from "@/components/ui/Skeleton";
 
 export const metadata: Metadata = {
   title: "Explore homes",
-  description: "Filter homes in Austin, Dallas and Phoenix, see them on a map, and ask Domi.",
+  description: "Filter homes in Austin, Dallas, Phoenix, Houston and San Antonio, see them on a map, and ask Domi.",
 };
 
 function ExploreFallback() {

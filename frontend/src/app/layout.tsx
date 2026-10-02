@@ -18,7 +18,7 @@ const display = Playfair_Display({
 export const metadata: Metadata = {
   title: { default: "Domi: find a home, feel at home", template: "%s | Domi" },
   description:
-    "Search homes in Austin, Dallas and Phoenix in plain words, explore them on a map, and understand the monthly numbers.",
+    "Search homes in Austin, Dallas, Phoenix, Houston and San Antonio in plain words, explore them on a map, and understand the monthly numbers.",
 };
 
 export const viewport: Viewport = {

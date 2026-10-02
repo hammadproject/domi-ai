@@ -17,6 +17,8 @@ const GROUPS = [
       { href: "/explore?city=Austin", label: "Austin, TX" },
       { href: "/explore?city=Dallas", label: "Dallas, TX" },
       { href: "/explore?city=Phoenix", label: "Phoenix, AZ" },
+      { href: "/explore?city=Houston", label: "Houston, TX" },
+      { href: "/explore?city=San%20Antonio", label: "San Antonio, TX" },
     ],
   },
 ];
@@ -29,7 +31,7 @@ export function SiteFooter() {
           <div>
             <Logo />
             <p className="mt-3 max-w-[32ch] text-[14px] leading-relaxed text-ink-soft">
-              A calmer way to search for a home in Austin, Dallas and Phoenix.
+              A calmer way to search for a home in Austin, Dallas, Phoenix, Houston and San Antonio.
             </p>
           </div>
 
