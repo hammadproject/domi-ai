@@ -50,14 +50,14 @@ export function HeroSearch() {
           Find homes <ArrowRight size={16} weight="bold" aria-hidden />
         </button>
       </form>
-      <ul className="mt-3 flex flex-wrap gap-2.5" aria-label="Start with a city">
+      <ul className="mt-3 flex flex-wrap gap-1.5 lg:flex-nowrap" aria-label="Start with a city">
         {CITIES.map((c) => (
           <li key={c.name}>
             <Link
               href={`/explore?city=${encodeURIComponent(c.name)}`}
-              className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-sage"
+              className="inline-flex items-center gap-1 whitespace-nowrap rounded-full border border-line bg-surface px-2.5 py-1 text-[12.5px] font-medium text-ink transition-colors hover:bg-sage"
             >
-              <MapPin size={16} aria-hidden /> {c.label}
+              <MapPin size={14} aria-hidden /> {c.label}
             </Link>
           </li>
         ))}
