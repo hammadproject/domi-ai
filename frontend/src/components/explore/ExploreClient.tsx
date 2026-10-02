@@ -70,7 +70,7 @@ function Pagination({ page, pages, onPage }: { page: number; pages: number; onPa
 function SelectedPreview({ l, onClose, onAsk }: { l: Listing; onClose: () => void; onAsk: () => void }) {
   return (
     <div className="absolute inset-x-3 bottom-3 z-[600] flex gap-3 rounded-[20px] border border-line bg-surface p-3 shadow-lift">
-      <TileMap lat={l.lat} lng={l.lng} zoom={18} maxW={160} maxH={160} centerPin className="size-[84px] shrink-0 rounded-2xl" />
+      <TileMap lat={l.lat} lng={l.lng} zoom={16} maxW={160} maxH={160} centerPin className="size-[84px] shrink-0 rounded-2xl" />
       <div className="min-w-0 flex-1">
         <p className="font-display text-2xl font-bold leading-none text-ink">{usd(l.price)}</p>
         <p className="mt-1 truncate text-sm font-medium text-ink">{street(l)}</p>
