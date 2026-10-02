@@ -18,14 +18,20 @@ from app.observability.logging import setup_logging
 from app.redis import get_redis
 
 log = logging.getLogger("ingestion")
-DEFAULT_CITIES = [("Austin", "TX"), ("Dallas", "TX"), ("Phoenix", "AZ")]
+DEFAULT_CITIES = [
+    ("Austin", "TX"),
+    ("Dallas", "TX"),
+    ("Phoenix", "AZ"),
+    ("Houston", "TX"),
+    ("San Antonio", "TX"),
+]
 
 
-async def ingest(cities: list[tuple[str, str]]) -> dict[str, int]:
+async def ingest(cities: list[tuple[str, str]], limit: int = 100) -> dict[str, int]:
     stats = {"live_rentcast_calls": 0, "embedding_texts_sent": 0, "upserted": 0, "skipped": 0}
     async for session in get_session():
         for city, state in cities:
-            raw, live = fetch_city(city, state)
+            raw, live = fetch_city(city, state, limit=limit)
             stats["live_rentcast_calls"] += int(live)
             rows = [r for r in (normalize_listing(x) for x in raw) if r is not None]
             stats["skipped"] += len(raw) - len(rows)
@@ -50,10 +56,11 @@ def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--city")
     p.add_argument("--state")
+    p.add_argument("--limit", type=int, default=100, help="listings per live RentCast call (max 500)")
     a = p.parse_args()
     cities = [(a.city, a.state)] if a.city and a.state else DEFAULT_CITIES
     stats = asyncio.run(
-        ingest(cities),
+        ingest(cities, a.limit),
         loop_factory=lambda: asyncio.SelectorEventLoop(selectors.SelectSelector()),
     )
     log.info("done: %s", stats)
