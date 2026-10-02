@@ -30,7 +30,7 @@ export function ListingMedia({
     <TileMap
       lat={l.lat}
       lng={l.lng}
-      zoom={kind === "building" ? 17 : kind === "land" ? 15 : 16}
+      zoom={kind === "building" ? 19 : kind === "land" ? 16 : 18}
       maxW={maxW}
       maxH={maxH}
       centerPin

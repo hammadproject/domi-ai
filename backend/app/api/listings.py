@@ -39,7 +39,7 @@ async def list_listings(
     property_type: PropertyType | None = None,
     sort: SortKey = "price_asc",
     page: int = Query(1, ge=1, le=1000),
-    page_size: int = Query(20, ge=1, le=50),
+    page_size: int = Query(20, ge=1, le=250),
     db: AsyncSession = Depends(get_session),
     cache: Cache = Depends(get_cache),
 ) -> dict:

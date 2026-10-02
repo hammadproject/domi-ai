@@ -3,7 +3,7 @@
 import "leaflet/dist/leaflet.css";
 import type { Map as LeafletMap, Marker } from "leaflet";
 import { useEffect, useRef, useState } from "react";
-import { Crosshair } from "@phosphor-icons/react";
+import { ArrowsIn, ArrowsOut, Crosshair } from "@phosphor-icons/react";
 import { cityLine, homeFacts, street, usd, usdCompact } from "@/lib/format";
 import type { Listing } from "@/lib/types";
 
@@ -26,10 +26,12 @@ interface Props {
   onSelect: (id: string) => void;
   /** Changes when the result set changes, so the map re-fits its bounds. */
   fitKey: string;
+  isFull?: boolean;
+  onToggleFull?: () => void;
   className?: string;
 }
 
-export function ListingMap({ listings, pickedIds, selectedId, hoveredId, onSelect, fitKey, className = "" }: Props) {
+export function ListingMap({ listings, pickedIds, selectedId, hoveredId, onSelect, fitKey, isFull = false, onToggleFull, className = "" }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
   const markersRef = useRef<Map<string, Marker>>(new Map());
@@ -195,6 +197,12 @@ export function ListingMap({ listings, pickedIds, selectedId, hoveredId, onSelec
     if (pts.length) map.fitBounds(L.latLngBounds(pts), { padding: [48, 48], maxZoom: 15, animate: false });
   };
 
+  // the container changes size on full screen: re-fit the view
+  useEffect(() => {
+    if (ready) fitAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFull]);
+
   return (
     <div className={`relative isolate overflow-hidden ${className}`}>
       <div ref={containerRef} className="domi-map absolute inset-0" role="region" aria-label="Map of matching homes" />
@@ -206,6 +214,16 @@ export function ListingMap({ listings, pickedIds, selectedId, hoveredId, onSelec
       >
         <Crosshair size={20} aria-hidden />
       </button>
+      {onToggleFull && (
+        <button
+          type="button"
+          onClick={onToggleFull}
+          aria-label={isFull ? "Exit full screen" : "Full screen map"}
+          className="absolute right-3 top-16 z-[500] grid size-10 place-items-center rounded-full bg-surface text-ink shadow-soft transition-colors hover:bg-sage"
+        >
+          {isFull ? <ArrowsIn size={20} aria-hidden /> : <ArrowsOut size={20} aria-hidden />}
+        </button>
+      )}
     </div>
   );
 }

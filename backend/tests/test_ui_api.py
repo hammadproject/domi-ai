@@ -267,3 +267,11 @@ def test_chat_accepts_and_validates_page_filters() -> None:
         "/api/chat", json={"message": "hello", "filters": {"property_type": "Castle"}}
     )
     assert bad.status_code == 422
+
+
+@needs_db
+def test_listings_page_size_allows_250_but_not_more() -> None:
+    c = db_client()
+    ok = c.get("/api/listings?page_size=250")
+    assert ok.status_code == 200 and ok.json()["page_size"] == 250
+    assert c.get("/api/listings?page_size=251").status_code == 422

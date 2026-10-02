@@ -32,7 +32,7 @@ const DEFAULT_SUGGESTIONS: Suggestion[] = [
 function MiniListing({ l, onShowOnMap }: { l: ChatListing; onShowOnMap?: (id: string) => void }) {
   return (
     <div className="flex gap-3 rounded-2xl border border-line bg-canvas p-2">
-      <TileMap lat={l.lat} lng={l.lng} zoom={16} maxW={140} maxH={140} centerPin pinKind={pinKindOf(l.property_type)} className="size-[72px] shrink-0 rounded-xl" />
+      <TileMap lat={l.lat} lng={l.lng} zoom={18} maxW={140} maxH={140} centerPin pinKind={pinKindOf(l.property_type)} className="size-[72px] shrink-0 rounded-xl" />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-ink">
           <span className="text-ink-soft">#{l.rank}</span> {usd(l.price)}

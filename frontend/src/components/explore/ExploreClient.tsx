@@ -34,7 +34,7 @@ import { useChat } from "@/state/chat";
 import { useCompare } from "@/state/compare";
 
 type Tab = "list" | "map" | "chat";
-const SPLIT_PAGE_SIZE = 50;
+const SPLIT_PAGE_SIZE = 250;
 const GRID_PAGE_SIZE = 12;
 
 function Pagination({ page, pages, onPage }: { page: number; pages: number; onPage: (p: number) => void }) {
@@ -70,7 +70,7 @@ function Pagination({ page, pages, onPage }: { page: number; pages: number; onPa
 function SelectedPreview({ l, onClose, onAsk }: { l: Listing; onClose: () => void; onAsk: () => void }) {
   return (
     <div className="absolute inset-x-3 bottom-3 z-[600] flex gap-3 rounded-[20px] border border-line bg-surface p-3 shadow-lift">
-      <TileMap lat={l.lat} lng={l.lng} zoom={16} maxW={160} maxH={160} centerPin className="size-[84px] shrink-0 rounded-2xl" />
+      <TileMap lat={l.lat} lng={l.lng} zoom={18} maxW={160} maxH={160} centerPin className="size-[84px] shrink-0 rounded-2xl" />
       <div className="min-w-0 flex-1">
         <p className="font-display text-2xl font-bold leading-none text-ink">{usd(l.price)}</p>
         <p className="mt-1 truncate text-sm font-medium text-ink">{street(l)}</p>
@@ -106,6 +106,7 @@ export function ExploreClient() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   // The chat is a widget: closed by default so the list and map get the room.
   const [chatOpen, setChatOpen] = useState(false);
+  const [mapFull, setMapFull] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
   const split = filters.view === "split";
@@ -210,6 +211,19 @@ export function ExploreClient() {
     if (selected && chat.context.length === 1 && chat.context[0].id === selected.id) chat.clearContext();
     setSelectedId(null);
   };
+
+  // full-page map: Esc exits, and the page behind it doesn't scroll
+  useEffect(() => {
+    if (!mapFull) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMapFull(false);
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [mapFull]);
 
   // scroll the list to a home picked on the map
   useEffect(() => {
@@ -356,7 +370,7 @@ export function ExploreClient() {
           </section>
 
           {/* map */}
-          <section aria-label="Map" className={`${tab === "map" ? "block" : "hidden"} h-[calc(100dvh-16rem)] min-h-[420px] lg:block lg:h-auto lg:min-h-0`}>
+          <section aria-label="Map" className={mapFull ? "fixed inset-0 z-[900] block bg-canvas p-3" : `${tab === "map" ? "block" : "hidden"} h-[calc(100dvh-16rem)] min-h-[420px] lg:block lg:h-auto lg:min-h-0`}>
             <div className="relative h-full overflow-hidden rounded-card border border-line">
               <ListingMap
                 listings={mapListings}
@@ -365,6 +379,8 @@ export function ExploreClient() {
                 hoveredId={hoveredId}
                 onSelect={select}
                 fitKey={fitKey}
+                isFull={mapFull}
+                onToggleFull={() => setMapFull((v) => !v)}
                 className="h-full w-full"
               />
               {selected && <SelectedPreview l={selected} onClose={deselect} onAsk={() => askAbout(selected)} />}
