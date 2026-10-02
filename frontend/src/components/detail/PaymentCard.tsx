@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { ArrowUpRight, Info } from "@phosphor-icons/react";
 import { BreakdownBar, breakdownParts } from "@/components/afford/Breakdown";
+import { Select } from "@/components/ui/Select";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/ui/States";
 import { api } from "@/lib/api";
@@ -47,12 +48,8 @@ export function PaymentCard({ price, hoa }: { price: number; hoa: number | null 
           <p className="flex h-11 items-center rounded-xl bg-surface-2 px-3 text-[15px] font-medium text-ink">{usd(price)}</p>
         </div>
         <div>
-          <label htmlFor="pc-down" className={label}>Down payment</label>
-          <select id="pc-down" value={down} onChange={(e) => setDown(Number(e.target.value))} className={field}>
-            {DOWN.map((d) => (
-              <option key={d} value={d}>{d}%</option>
-            ))}
-          </select>
+          <span className={label}>Down payment</span>
+          <Select variant="field" label="Down payment" value={String(down)} options={DOWN.map((d) => ({ value: String(d), label: `${d}%` }))} onChange={(v) => setDown(Number(v))} />
         </div>
         <div>
           <label htmlFor="pc-rate" className={label}>Interest rate (%)</label>
@@ -66,11 +63,8 @@ export function PaymentCard({ price, hoa }: { price: number; hoa: number | null 
           />
         </div>
         <div>
-          <label htmlFor="pc-term" className={label}>Loan term</label>
-          <select id="pc-term" value={term} onChange={(e) => setTerm(Number(e.target.value))} className={field}>
-            <option value={30}>30 years</option>
-            <option value={15}>15 years</option>
-          </select>
+          <span className={label}>Loan term</span>
+          <Select variant="field" label="Loan term" value={String(term)} options={[{ value: "30", label: "30 years" }, { value: "15", label: "15 years" }]} onChange={(v) => setTerm(Number(v))} />
         </div>
       </div>
       {rate !== "" && !validRate && <p role="alert" className="mt-2 text-sm text-danger">Enter a rate between 0 and 30.</p>}

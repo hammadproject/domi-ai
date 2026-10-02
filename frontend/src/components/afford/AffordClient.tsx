@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, CaretDown, ChartBar, HouseLine, Lock } from "@phosphor-icons/react";
 import { BreakdownBar, breakdownParts } from "@/components/afford/Breakdown";
 import { Button, LinkButton } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/ui/States";
 import { api } from "@/lib/api";
@@ -291,10 +292,8 @@ export function AffordClient() {
             <Field id="debts" label="Monthly debt payments" value={debts} onChange={setDebts} prefix="$" hint="Cards, car loans, student loans." />
             <Field id="avail" label="Available down payment" value={avail} onChange={setAvail} prefix="$" />
             <div>
-              <label htmlFor="dti" className="mb-1.5 block text-[13px] font-medium text-ink-soft">Max total debt-to-income</label>
-              <select id="dti" value={dti} onChange={(e) => setDtiIn(e.target.value)} className="h-10 w-full rounded-xl border border-line bg-canvas px-3 text-[15px] text-ink outline-none focus:border-primary focus:outline-none focus-visible:outline-none">
-                {[28, 33, 36, 41, 43, 45, 50].map((v) => (<option key={v} value={v}>{v}%</option>))}
-              </select>
+              <span className="mb-1 block text-[13px] font-medium text-ink-soft">Max total debt-to-income</span>
+              <Select variant="field" label="Max total debt-to-income" value={dti} options={[28, 33, 36, 41, 43, 45, 50].map((v) => ({ value: String(v), label: `${v}%` }))} onChange={(v) => setDtiIn(v)} />
               <p className="mt-1 text-xs text-muted">Includes housing, debts and this new loan.</p>
             </div>
           </div>

@@ -39,12 +39,15 @@ export function ListingMap({ listings, pickedIds, selectedId, hoveredId, onSelec
     onSelectRef.current = onSelect;
   });
   const [ready, setReady] = useState(false);
+  const [hint, setHint] = useState(false);
+  const hintTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // create the map once
   useEffect(() => {
     let cancelled = false;
     let map: LeafletMap | null = null;
     let resizeObs: ResizeObserver | null = null;
+    let removeWheel: (() => void) | null = null;
     (async () => {
       const L = (await import("leaflet")).default;
       if (cancelled || !containerRef.current) return;
@@ -52,7 +55,7 @@ export function ListingMap({ listings, pickedIds, selectedId, hoveredId, onSelec
       map = L.map(containerRef.current, {
         zoomControl: false,
         attributionControl: false,
-        scrollWheelZoom: true,
+        scrollWheelZoom: false, // plain wheel scrolls the page; Ctrl/Cmd+wheel zooms (below)
       }).setView([32.3, -97.5], 6);
       L.control.zoom({ position: "bottomleft" }).addTo(map);
       L.control.attribution({ prefix: false, position: "bottomright" }).addTo(map);
@@ -61,6 +64,23 @@ export function ListingMap({ listings, pickedIds, selectedId, hoveredId, onSelec
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(map);
       mapRef.current = map;
+      const el = containerRef.current;
+      let lastZoom = 0;
+      const onWheel = (e: WheelEvent) => {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault(); // also stops browser page-zoom on trackpad pinch
+          const now = Date.now();
+          if (now - lastZoom < 80) return;
+          lastZoom = now;
+          map?.setZoomAround(map.mouseEventToContainerPoint(e), map.getZoom() + (e.deltaY < 0 ? 1 : -1));
+        } else {
+          setHint(true);
+          clearTimeout(hintTimer.current);
+          hintTimer.current = setTimeout(() => setHint(false), 1400);
+        }
+      };
+      el.addEventListener("wheel", onWheel, { passive: false });
+      removeWheel = () => el.removeEventListener("wheel", onWheel);
       // the map pane changes width when the chat opens or closes
       resizeObs = new ResizeObserver(() => map?.invalidateSize({ animate: false }));
       resizeObs.observe(containerRef.current);
@@ -70,6 +90,8 @@ export function ListingMap({ listings, pickedIds, selectedId, hoveredId, onSelec
     return () => {
       cancelled = true;
       resizeObs?.disconnect();
+      removeWheel?.();
+      clearTimeout(hintTimer.current);
       markers.clear();
       map?.remove();
       mapRef.current = null;
@@ -155,6 +177,14 @@ export function ListingMap({ listings, pickedIds, selectedId, hoveredId, onSelec
   return (
     <div className={`relative isolate overflow-hidden ${className}`}>
       <div ref={containerRef} className="domi-map absolute inset-0" role="region" aria-label="Map of matching homes" />
+      <div
+        aria-hidden
+        className={`pointer-events-none absolute inset-0 z-[600] grid place-items-center bg-ink/30 transition-opacity duration-200 ${hint ? "opacity-100" : "opacity-0"}`}
+      >
+        <p className="rounded-full bg-surface px-4 py-2 text-sm font-medium text-ink shadow-lift">
+          Hold Ctrl (⌘ on Mac) and scroll to zoom
+        </p>
+      </div>
       <button
         type="button"
         onClick={fitAll}

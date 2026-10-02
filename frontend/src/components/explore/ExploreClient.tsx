@@ -101,7 +101,6 @@ export function ExploreClient() {
   const filters = useMemo(() => parseFilters(new URLSearchParams(searchParams.toString())), [searchParams]);
   const focusParam = searchParams.get("focus");
 
-  const [moreOpen, setMoreOpen] = useState(false);
   const [tab, setTab] = useState<Tab>("list");
   const [selectedId, setSelectedId] = useState<string | null>(focusParam);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -257,7 +256,15 @@ export function ExploreClient() {
       body="Try a higher budget, fewer bedrooms, or a different city. You can also ask Domi to loosen things for you."
       actions={
         <>
-          <Button onClick={() => setMoreOpen(true)}>Edit filters</Button>
+          <Button
+            onClick={() => {
+              const bar = document.getElementById("filter-bar");
+              bar?.scrollIntoView({ behavior: "smooth", block: "center" });
+              bar?.querySelector<HTMLElement>("button")?.focus({ preventScroll: true });
+            }}
+          >
+            Edit filters
+          </Button>
           <Button variant="secondary" onClick={reset}>Reset search</Button>
         </>
       }
@@ -271,7 +278,7 @@ export function ExploreClient() {
         {loading ? "Finding homes" : failed ? "Homes" : `${total.toLocaleString("en-US")} ${total === 1 ? "matching home" : "matching homes"}`}
       </h2>
       <div className="flex items-center gap-2">
-        <Select label="Sort results" value={filters.sort} options={SORTS} onChange={(v) => update({ sort: v as ExploreFilters["sort"] })} />
+        <Select size="sm" label="Sort results" value={filters.sort} options={SORTS} onChange={(v) => update({ sort: v as ExploreFilters["sort"] })} />
       </div>
     </div>
   );
@@ -294,7 +301,7 @@ export function ExploreClient() {
       </div>
 
       <div className="mt-4">
-        <FilterBar filters={filters} cities={cities.data} onChange={(p) => update(p)} onReset={reset} moreOpen={moreOpen} onToggleMore={() => setMoreOpen((v) => !v)} />
+        <FilterBar filters={filters} cities={cities.data} onChange={(p) => update(p)} onReset={reset} />
       </div>
       {chips.length > 0 && (
         <ul className="mt-3 flex flex-wrap items-center gap-2" aria-label="Active filters">

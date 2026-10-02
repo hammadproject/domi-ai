@@ -8,6 +8,7 @@ import { ChatPanel, type Suggestion } from "@/components/chat/ChatPanel";
 import { ListingMedia } from "@/components/listing/ListingMedia";
 import { listingHref } from "@/components/listing/ListingCard";
 import { LinkButton } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState, ErrorState } from "@/components/ui/States";
 import { api } from "@/lib/api";
@@ -61,7 +62,6 @@ function summary(c: Comparison): string {
 }
 
 const DOWN = [5, 10, 15, 20, 25, 30];
-const control = "h-10 rounded-full border border-line bg-canvas px-4 text-sm font-medium text-ink outline-none focus:outline-none focus-visible:outline-none";
 
 const toListing = (l: ListingComparison): Listing => ({
   id: l.id, address: l.address, city: l.city, state: l.state, zip: l.zip, lat: l.lat, lng: l.lng,
@@ -158,12 +158,10 @@ export function CompareClient() {
             <>
               <section aria-label="Shared payment assumptions" className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-3 rounded-card border border-line bg-surface px-5 py-3.5">
                 <h2 className="font-display text-xl font-bold text-ink">Payment assumptions</h2>
-                <label className="flex items-center gap-2 text-sm text-ink-soft">
+                <div className="flex items-center gap-2 text-sm text-ink-soft">
                   Down payment
-                  <select value={down} onChange={(e) => setDown(Number(e.target.value))} className={control}>
-                    {DOWN.map((d) => (<option key={d} value={d}>{d}%</option>))}
-                  </select>
-                </label>
+<Select size="sm" label="Down payment" value={String(down)} options={DOWN.map((d) => ({ value: String(d), label: `${d}%` }))} onChange={(v) => setDown(Number(v))} />
+                </div>
                 <label className="flex items-center gap-2 text-sm text-ink-soft">
                   Rate
                   <span className="focus-ring-within flex h-10 w-24 items-center rounded-full border border-line bg-canvas px-4">
@@ -171,13 +169,10 @@ export function CompareClient() {
                     <span className="text-sm text-ink-soft" aria-hidden>%</span>
                   </span>
                 </label>
-                <label className="flex items-center gap-2 text-sm text-ink-soft">
+                <div className="flex items-center gap-2 text-sm text-ink-soft">
                   Term
-                  <select value={term} onChange={(e) => setTerm(Number(e.target.value))} className={control}>
-                    <option value={30}>30 years</option>
-                    <option value={15}>15 years</option>
-                  </select>
-                </label>
+<Select size="sm" label="Loan term" value={String(term)} options={[{ value: "30", label: "30 years" }, { value: "15", label: "15 years" }]} onChange={(v) => setTerm(Number(v))} />
+                </div>
                 <p className="ml-auto max-w-[34ch] text-xs text-muted">Includes configured taxes, insurance, HOA and PMI where they apply. Not a loan offer.</p>
               </section>
               {rate !== "" && !validRate && <p role="alert" className="mt-2 text-sm text-danger">Enter a rate between 0 and 30.</p>}
