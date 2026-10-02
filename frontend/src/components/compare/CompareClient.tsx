@@ -216,7 +216,7 @@ export function CompareClient() {
                             return (
                               <div key={row.key} className="flex items-center justify-between gap-3 py-1.5">
                                 <dt className={`text-sm ${row.strong ? "font-semibold text-ink" : "text-muted"}`}>{row.label}</dt>
-                                <dd className={`tabular inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-right text-[15px] ${row.strong ? "font-semibold" : "font-medium"} ${isBest ? "bg-sage text-sage-ink" : "text-ink"}`}>
+                                <dd className={`tabular inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-right text-[14px] ${row.strong ? "font-semibold" : "font-medium"} ${isBest ? "bg-sage text-sage-ink" : "text-ink"}`}>
                                   {row.show(l)}
                                   {isBest && (
                                     <>
@@ -283,7 +283,7 @@ export function CompareClient() {
         <button
           type="button"
           onClick={() => setChatOpen(true)}
-          className="fixed bottom-5 right-5 z-[var(--z-fab,35)] inline-flex h-12 items-center gap-2 rounded-full bg-primary px-5 text-[15px] font-medium text-on-primary shadow-lift transition-[background-color,transform] hover:bg-primary-hover active:scale-[0.97]"
+          className="fixed bottom-5 right-5 z-[var(--z-fab,35)] inline-flex h-12 items-center gap-2 rounded-full bg-primary px-5 text-[14px] font-medium text-on-primary shadow-lift transition-[background-color,transform] hover:bg-primary-hover active:scale-[0.97]"
         >
           <ChatCircleDots size={20} aria-hidden /> Ask Domi
         </button>

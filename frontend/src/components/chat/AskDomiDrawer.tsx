@@ -34,7 +34,7 @@ export function AskDomiDrawer() {
         <button
           type="button"
           onClick={chat.openDrawer}
-          className="fixed bottom-5 right-5 z-[var(--z-fab,35)] inline-flex h-13 items-center gap-2 rounded-full bg-primary px-5 py-3.5 text-[15px] font-medium text-on-primary shadow-lift transition-[background-color,transform] hover:bg-primary-hover active:scale-[0.97]"
+          className="fixed bottom-5 right-5 z-[var(--z-fab,35)] inline-flex h-13 items-center gap-2 rounded-full bg-primary px-5 py-3.5 text-[14px] font-medium text-on-primary shadow-lift transition-[background-color,transform] hover:bg-primary-hover active:scale-[0.97]"
         >
           <ChatCircleDots size={20} aria-hidden /> Ask Domi
         </button>

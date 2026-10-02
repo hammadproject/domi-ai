@@ -37,7 +37,7 @@ function MiniListing({ l, onShowOnMap }: { l: ChatListing; onShowOnMap?: (id: st
         <p className="truncate text-sm font-semibold text-ink">
           <span className="text-ink-soft">#{l.rank}</span> {usd(l.price)}
         </p>
-        <p className="text-[13px] leading-snug text-ink-soft">{street(l)}</p>
+        <p className="text-[12.5px] leading-snug text-ink-soft">{street(l)}</p>
         <p className="truncate text-xs text-muted">{homeFacts(l)}</p>
         <div className="mt-1 flex gap-3 text-xs font-medium">
           <Link href={listingHref(l.id)} className="text-sage-ink underline underline-offset-2 hover:text-ink">
@@ -73,7 +73,7 @@ function Bubble({
     return (
       <motion.div {...anim} className="flex flex-col items-end gap-1">
         {m.about && <span className="max-w-[85%] truncate text-xs text-muted">About {m.about}</span>}
-        <p className="max-w-[88%] whitespace-pre-line rounded-2xl rounded-br-md bg-sage px-4 py-2.5 text-[15px] text-sage-ink">
+        <p className="max-w-[88%] whitespace-pre-line rounded-2xl rounded-br-md bg-sage px-4 py-2.5 text-[14px] text-sage-ink">
           {m.text}
         </p>
       </motion.div>
@@ -87,7 +87,7 @@ function Bubble({
       </span>
       <div className="min-w-0 flex-1 space-y-3">
         {m.status === "error" ? (
-          <div role="alert" className="rounded-2xl rounded-tl-md bg-danger-bg px-4 py-3 text-[15px] text-danger">
+          <div role="alert" className="rounded-2xl rounded-tl-md bg-danger-bg px-4 py-3 text-[14px] text-danger">
             <p>{m.error?.message ?? "Something went wrong."}</p>
             {isLast && (
               <button
@@ -224,7 +224,7 @@ export function ChatPanel({
         {chat.messages.length === 0 ? (
           <div className="py-6">
             <p className="font-display text-2xl font-bold text-ink">What are you looking for?</p>
-            <p className="mt-2 text-[15px] text-ink-soft">
+            <p className="mt-2 text-[14px] text-ink-soft">
               Describe it the way you would to a friend. Domi answers only from the listings in its database.
             </p>
           </div>
@@ -249,7 +249,7 @@ export function ChatPanel({
                 key={label}
                 type="button"
                 onClick={() => void chat.send(message, context ? { context } : undefined)}
-                className="rounded-full border border-line bg-canvas px-3.5 py-1.5 text-left text-[13px] font-medium text-ink-soft transition-colors hover:bg-sage hover:text-ink"
+                className="rounded-full border border-line bg-canvas px-3.5 py-1.5 text-left text-[12.5px] font-medium text-ink-soft transition-colors hover:bg-sage hover:text-ink"
               >
                 {label}
               </button>
@@ -262,7 +262,7 @@ export function ChatPanel({
           <ul className="mb-2.5 flex items-center gap-1.5 overflow-x-auto pb-1" aria-label="Active filters">
             {filterChips.map((c) => (
               <li key={c.label} className="shrink-0 whitespace-nowrap">
-                <Chip onRemove={c.clear} className="!py-1 text-[13px]">{c.label}</Chip>
+                <Chip onRemove={c.clear} className="!py-1 text-[12.5px]">{c.label}</Chip>
               </li>
             ))}
             {onResetFilters && (
@@ -297,7 +297,7 @@ export function ChatPanel({
             maxLength={1000}
             placeholder={chat.messages.length ? "Refine your search…" : "Try: 3 bed under $500k in Dallas"}
             autoComplete="off"
-            className="h-12 min-w-0 flex-1 rounded-full border border-line bg-canvas px-5 text-[15px] text-ink outline-none transition-colors placeholder:text-muted focus:border-primary"
+            className="h-12 min-w-0 flex-1 rounded-full border border-line bg-canvas px-5 text-[14px] text-ink outline-none transition-colors placeholder:text-muted focus:border-primary"
           />
           {chat.busy ? (
             <button

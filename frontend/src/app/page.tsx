@@ -32,7 +32,7 @@ export default function Home() {
       <section className="mx-auto grid w-full max-w-[1400px] grid-cols-1 items-center gap-8 px-4 pb-10 pt-6 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-12 lg:pb-12 lg:pt-8">
         <div>
           <Reveal>
-            <p className="text-[13px] font-medium uppercase tracking-[0.18em] text-sage-ink">
+            <p className="text-[12.5px] font-medium uppercase tracking-[0.18em] text-sage-ink">
               Your AI home search companion
             </p>
           </Reveal>
@@ -70,7 +70,7 @@ export default function Home() {
               <ChatCircleDots size={22} aria-hidden />
             </IconCircle>
             <h3 className="font-display mt-4 text-2xl font-bold text-ink sm:text-3xl">Search in your own words</h3>
-            <p className="mt-2 max-w-[52ch] text-[16px] leading-relaxed text-ink-soft">
+            <p className="mt-2 max-w-[52ch] text-[15px] leading-relaxed text-ink-soft">
               Describe what you want, like a 3 bedroom in Austin under 500k. Domi turns it into filters and finds
               matching homes.
             </p>
@@ -97,7 +97,7 @@ export default function Home() {
               <MapTrifold size={22} aria-hidden />
             </IconCircle>
             <h3 className="font-display mt-4 text-2xl font-bold sm:text-3xl">Explore homes on the map</h3>
-            <p className="mt-2 max-w-[40ch] text-[16px] leading-relaxed opacity-90">
+            <p className="mt-2 max-w-[40ch] text-[15px] leading-relaxed opacity-90">
               See every match as a price pin. Click one to ask Domi about that home.
             </p>
             <MapCellPreview />
@@ -139,7 +139,7 @@ export default function Home() {
                 </span>
                 <div>
                   <h3 className="font-display text-xl font-bold text-ink sm:text-2xl">{s.title}</h3>
-                  <p className="mt-1 text-[16px] leading-relaxed text-ink-soft">{s.body}</p>
+                  <p className="mt-1 text-[15px] leading-relaxed text-ink-soft">{s.body}</p>
                 </div>
               </Reveal>
             ))}

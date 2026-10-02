@@ -39,7 +39,7 @@ export function HeroSearch() {
           maxLength={200}
           placeholder="3 bedroom homes in Austin under $550k"
           autoComplete="off"
-          className="h-11 min-w-0 flex-1 appearance-none rounded-none border-0 bg-transparent text-[15px] text-ink shadow-none outline-none focus:outline-none focus-visible:outline-none placeholder:text-muted"
+          className="h-11 min-w-0 flex-1 appearance-none rounded-none border-0 bg-transparent text-[14px] text-ink shadow-none outline-none focus:outline-none focus-visible:outline-none placeholder:text-muted"
         />
         <button
           type="submit"

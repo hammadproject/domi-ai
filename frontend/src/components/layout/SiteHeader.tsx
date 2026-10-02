@@ -36,7 +36,7 @@ export function SiteHeader() {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`relative rounded-full px-4 py-2 text-[15px] font-medium transition-colors ${
+                className={`relative rounded-full px-4 py-2 text-[14px] font-medium transition-colors ${
                   active ? "bg-sage text-ink" : "text-ink-soft hover:bg-sage/60 hover:text-ink"
                 }`}
               >
@@ -62,7 +62,7 @@ export function SiteHeader() {
           ) : (
             <Link
               href="/"
-              className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-[15px] font-medium text-ink-soft transition-colors hover:bg-sage/60 hover:text-ink"
+              className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-[14px] font-medium text-ink-soft transition-colors hover:bg-sage/60 hover:text-ink"
             >
               <ArrowLeft size={16} aria-hidden /> Back to home
             </Link>

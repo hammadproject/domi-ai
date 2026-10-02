@@ -36,8 +36,8 @@ export function PaymentCard({ price, hoa }: { price: number; hoa: number | null 
   const b = est.data;
   const calcHref = `/affordability?price=${price}&down=${down}&term=${term}&hoa=${hoa ?? 0}${validRate ? `&rate=${rateNum}` : ""}`;
 
-  const field = "h-11 w-full rounded-xl border border-line bg-canvas px-3 text-[15px] text-ink outline-none focus:border-primary";
-  const label = "mb-1.5 block text-[13px] font-medium text-ink-soft";
+  const field = "h-11 w-full rounded-xl border border-line bg-canvas px-3 text-[14px] text-ink outline-none focus:border-primary";
+  const label = "mb-1.5 block text-[12.5px] font-medium text-ink-soft";
 
   return (
     <section aria-label="Monthly cost estimate" className="rounded-card border border-line bg-surface p-6 shadow-soft">
@@ -45,7 +45,7 @@ export function PaymentCard({ price, hoa }: { price: number; hoa: number | null 
       <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4">
         <div>
           <span className={label}>Home price</span>
-          <p className="flex h-11 items-center rounded-xl bg-surface-2 px-3 text-[15px] font-medium text-ink">{usd(price)}</p>
+          <p className="flex h-11 items-center rounded-xl bg-surface-2 px-3 text-[14px] font-medium text-ink">{usd(price)}</p>
         </div>
         <div>
           <span className={label}>Down payment</span>
@@ -82,7 +82,7 @@ export function PaymentCard({ price, hoa }: { price: number; hoa: number | null 
               <span className="text-2xl font-semibold text-ink-soft"> / mo</span>
             </p>
             <BreakdownBar parts={breakdownParts(b)} className="mt-4 !bg-surface/60" />
-            <p className="mt-3 text-[13px] leading-snug text-sage-ink">
+            <p className="mt-3 text-[12.5px] leading-snug text-sage-ink">
               Principal and interest {usd2(b.principal_interest)}, taxes {usd2(b.property_tax)}, insurance {usd2(b.insurance)}
               {b.hoa ? `, HOA ${usd2(b.hoa)}` : ""}
               {b.pmi_applies ? `, PMI ${usd2(b.pmi)}` : ""}.
@@ -98,7 +98,7 @@ export function PaymentCard({ price, hoa }: { price: number; hoa: number | null 
 
       <Link
         href={calcHref}
-        className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-[15px] font-medium text-on-primary transition-[background-color,transform] hover:bg-primary-hover active:scale-[0.98]"
+        className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-[14px] font-medium text-on-primary transition-[background-color,transform] hover:bg-primary-hover active:scale-[0.98]"
       >
         Open mortgage calculator <ArrowUpRight size={16} weight="bold" aria-hidden />
       </Link>

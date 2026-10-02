@@ -108,7 +108,7 @@ export function FilterBar({
         type="button"
         onClick={onReset}
         disabled={count === 0}
-        className="inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-[13px] font-medium text-ink-soft transition-colors hover:bg-sage/60 hover:text-ink disabled:opacity-40"
+        className="inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-[12.5px] font-medium text-ink-soft transition-colors hover:bg-sage/60 hover:text-ink disabled:opacity-40"
       >
         <ArrowCounterClockwise size={16} aria-hidden /> Reset
       </button>

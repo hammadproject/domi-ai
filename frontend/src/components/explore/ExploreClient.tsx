@@ -298,11 +298,11 @@ export function ExploreClient() {
   );
 
   return (
-    <div className={`mx-auto w-full max-w-[1400px] px-4 pt-5 sm:px-8 ${split ? "pb-24 lg:pb-16" : "pb-24"}`}>
+    <div className={`mx-auto w-full max-w-[1400px] px-4 pt-4 sm:px-6 ${split ? "pb-24 lg:pb-8" : "pb-24"}`}>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-bold text-ink sm:text-4xl">Let&apos;s find your place.</h1>
-          <p className="mt-1 text-ink-soft">Search, refine, and explore with Domi.</p>
+          <h1 className="font-display text-2xl font-bold text-ink sm:text-3xl">Let&apos;s find your place.</h1>
+          <p className="mt-0.5 text-sm text-ink-soft">Search, refine, and explore with Domi.</p>
         </div>
         <div className="hidden items-center rounded-full border border-line bg-surface p-1 sm:flex" role="group" aria-label="View">
           <button type="button" onClick={() => update({ view: "split" }, true)} aria-pressed={split} className={`inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium ${split ? "bg-sage text-sage-ink" : "text-ink-soft hover:text-ink"}`}>
@@ -413,7 +413,7 @@ export function ExploreClient() {
         <button
           type="button"
           onClick={() => setChatOpen(true)}
-          className={`fixed right-5 z-[var(--z-fab,35)] hidden h-12 items-center gap-2 rounded-full bg-primary px-5 text-[15px] font-medium text-on-primary shadow-lift transition-[background-color,transform] hover:bg-primary-hover active:scale-[0.97] lg:inline-flex ${compare.items.length > 0 ? "bottom-24" : "bottom-5"}`}
+          className={`fixed right-5 z-[var(--z-fab,35)] hidden h-12 items-center gap-2 rounded-full bg-primary px-5 text-[14px] font-medium text-on-primary shadow-lift transition-[background-color,transform] hover:bg-primary-hover active:scale-[0.97] lg:inline-flex ${compare.items.length > 0 ? "bottom-24" : "bottom-5"}`}
         >
           <ChatCircleDots size={20} aria-hidden /> Ask Domi
         </button>

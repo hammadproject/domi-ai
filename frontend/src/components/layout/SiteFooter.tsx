@@ -28,7 +28,7 @@ export function SiteFooter() {
         <div className="grid grid-cols-1 gap-10 md:grid-cols-[minmax(0,1.4fr)_repeat(2,minmax(0,0.7fr))_minmax(0,1.3fr)]">
           <div>
             <Logo />
-            <p className="mt-3 max-w-[32ch] text-[15px] leading-relaxed text-ink-soft">
+            <p className="mt-3 max-w-[32ch] text-[14px] leading-relaxed text-ink-soft">
               A calmer way to search for a home in Austin, Dallas and Phoenix.
             </p>
           </div>
@@ -39,7 +39,7 @@ export function SiteFooter() {
               <ul className="mt-3 space-y-2">
                 {g.links.map((l) => (
                   <li key={l.href}>
-                    <Link href={l.href} className="text-[15px] text-ink-soft transition-colors hover:text-ink">
+                    <Link href={l.href} className="text-[14px] text-ink-soft transition-colors hover:text-ink">
                       {l.label}
                     </Link>
                   </li>
@@ -58,7 +58,7 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col gap-2 border-t border-line pt-5 text-[13px] text-muted sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-8 flex flex-col gap-2 border-t border-line pt-5 text-[12.5px] text-muted sm:flex-row sm:items-center sm:justify-between">
           <p>&copy; {new Date().getFullYear()} Domi. Listings via RentCast.</p>
           <p>
             Map data &copy;{" "}

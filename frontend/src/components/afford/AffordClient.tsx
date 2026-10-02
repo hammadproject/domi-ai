@@ -27,7 +27,7 @@ function Field({
 }) {
   return (
     <div className={className}>
-      <label htmlFor={id} className="mb-1 block text-[13px] font-medium text-ink-soft">{label}</label>
+      <label htmlFor={id} className="mb-1 block text-[12.5px] font-medium text-ink-soft">{label}</label>
       <div className={`focus-ring-within flex h-10 items-center rounded-xl border bg-canvas px-3 ${invalid ? "border-danger" : "border-line"}`}>
         {prefix && <span className="mr-1.5 text-ink-soft" aria-hidden>{prefix}</span>}
         <input
@@ -37,7 +37,7 @@ function Field({
           onChange={(e) => onChange(e.target.value)}
           aria-invalid={invalid || undefined}
           aria-describedby={hint ? `${id}-hint` : undefined}
-          className="h-full min-w-0 flex-1 bg-transparent text-[15px] text-ink outline-none focus:outline-none focus-visible:outline-none"
+          className="h-full min-w-0 flex-1 bg-transparent text-[14px] text-ink outline-none focus:outline-none focus-visible:outline-none"
         />
         {suffix && <span className="ml-1.5 text-ink-soft" aria-hidden>{suffix}</span>}
       </div>
@@ -195,7 +195,7 @@ export function AffordClient() {
             <Field id="down-amt" label="Down payment $" value={downAmt} onChange={(v) => setDownIn({ mode: "amt", value: v })} prefix="$" invalid={Boolean(errors.down)} hint={errors.down || undefined} />
             <Field id="rate" label="Interest rate" value={rate} onChange={setRateIn} suffix="%" invalid={Boolean(errors.rate)} hint={errors.rate} />
             <div>
-              <span className="mb-1.5 block text-[13px] font-medium text-ink-soft" id="term-label">Loan term</span>
+              <span className="mb-1.5 block text-[12.5px] font-medium text-ink-soft" id="term-label">Loan term</span>
               <div role="group" aria-labelledby="term-label" className="flex h-10 rounded-full border border-line bg-canvas p-1">
                 {([15, 30] as const).map((y) => (
                   <button key={y} type="button" onClick={() => setTerm(y)} aria-pressed={term === y} className={`flex-1 rounded-full text-sm font-medium transition-colors ${term === y ? "bg-sage text-sage-ink" : "text-ink-soft hover:text-ink"}`}>
@@ -209,7 +209,7 @@ export function AffordClient() {
 
           <div className="mt-5 border-t border-line pt-4">
             <button type="button" onClick={() => setFeesOpen((v) => !v)} aria-expanded={feesOpen} className="flex w-full items-center justify-between text-left">
-              <span className="text-[17px] font-semibold text-ink">Taxes &amp; insurance</span>
+              <span className="text-[15px] font-semibold text-ink">Taxes &amp; insurance</span>
               <CaretDown size={18} className={`transition-transform ${feesOpen ? "rotate-180" : ""}`} aria-hidden />
             </button>
             {feesOpen && (
@@ -247,7 +247,7 @@ export function AffordClient() {
                 {breakdownParts(b)
                   .filter((p) => p.value > 0 || ['pi', 'tax', 'ins'].includes(p.key))
                   .map((p) => (
-                  <li key={p.key} className="flex items-center justify-between gap-3 text-[15px]">
+                  <li key={p.key} className="flex items-center justify-between gap-3 text-[14px]">
                     <span className="inline-flex items-center gap-2.5 text-ink-soft">
                       <span className="size-3 rounded-full" style={{ background: p.color }} aria-hidden />
                       {p.label}
@@ -292,7 +292,7 @@ export function AffordClient() {
             <Field id="debts" label="Monthly debt payments" value={debts} onChange={setDebts} prefix="$" hint="Cards, car loans, student loans." />
             <Field id="avail" label="Available down payment" value={avail} onChange={setAvail} prefix="$" />
             <div>
-              <span className="mb-1 block text-[13px] font-medium text-ink-soft">Max total debt-to-income</span>
+              <span className="mb-1 block text-[12.5px] font-medium text-ink-soft">Max total debt-to-income</span>
               <Select variant="field" label="Max total debt-to-income" value={dti} options={[28, 33, 36, 41, 43, 45, 50].map((v) => ({ value: String(v), label: `${v}%` }))} onChange={(v) => setDtiIn(v)} />
               <p className="mt-1 text-xs text-muted">Includes housing, debts and this new loan.</p>
             </div>

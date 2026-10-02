@@ -36,7 +36,7 @@ function Fact({ icon, value, label }: { icon: React.ReactNode; value: string; la
       <span className="grid size-11 shrink-0 place-items-center rounded-full bg-sage text-sage-ink">{icon}</span>
       <span>
         <span className="block text-lg font-semibold leading-tight text-ink">{value}</span>
-        <span className="block text-[13px] text-muted">{label}</span>
+        <span className="block text-[12.5px] text-muted">{label}</span>
       </span>
     </li>
   );
@@ -135,7 +135,7 @@ export function DetailClient({ id }: { id: string }) {
             {inCompare ? <Check size={18} weight="bold" aria-hidden /> : <Scales size={18} aria-hidden />}
             {inCompare ? "In comparison" : "Add to comparison"}
           </Button>
-          <a href="#ask-domi" className="inline-flex h-12 items-center gap-2 rounded-full border border-line bg-surface px-6 text-[15px] font-medium text-ink hover:bg-sage">
+          <a href="#ask-domi" className="inline-flex h-12 items-center gap-2 rounded-full border border-line bg-surface px-6 text-[14px] font-medium text-ink hover:bg-sage">
             <ChatCircleDots size={18} aria-hidden /> Ask Domi
           </a>
         </div>
@@ -149,7 +149,7 @@ export function DetailClient({ id }: { id: string }) {
             <TileMap lat={d.lat} lng={d.lng} zoom={14} maxW={460} maxH={220} centerPin className="min-h-[150px] rounded-card" />
             <TileMap lat={d.lat} lng={d.lng} zoom={11} maxW={460} maxH={220} centerPin className="min-h-[150px] rounded-card" />
           </section>
-          <p className="-mt-5 text-[13px] text-muted">
+          <p className="-mt-5 text-[12.5px] text-muted">
             This data source doesn&apos;t include listing photos, so these maps show where the home sits, from the street to the wider area.
           </p>
 
@@ -169,7 +169,7 @@ export function DetailClient({ id }: { id: string }) {
               {details.map(([k, v]) => (
                 <div key={k} className="flex items-baseline justify-between gap-4">
                   <dt className="text-sm text-muted">{k}</dt>
-                  <dd className="text-right text-[15px] font-medium text-ink">{v}</dd>
+                  <dd className="text-right text-[14px] font-medium text-ink">{v}</dd>
                 </div>
               ))}
             </dl>
@@ -178,9 +178,9 @@ export function DetailClient({ id }: { id: string }) {
           <section aria-label="From the listing">
             <h2 className="font-display text-2xl font-bold text-ink">From the listing</h2>
             {d.description ? (
-              <p className="mt-3 max-w-[70ch] text-[17px] leading-relaxed text-ink-soft">{d.description}</p>
+              <p className="mt-3 max-w-[70ch] text-[15px] leading-relaxed text-ink-soft">{d.description}</p>
             ) : (
-              <p className="mt-3 max-w-[70ch] text-[17px] leading-relaxed text-ink-soft">
+              <p className="mt-3 max-w-[70ch] text-[15px] leading-relaxed text-ink-soft">
                 The listing source doesn&apos;t include a description for this home. Everything shown here comes from its recorded details.
               </p>
             )}

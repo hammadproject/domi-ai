@@ -39,7 +39,7 @@ export function RichText({ text }: { text: string }) {
   const out: ReactNode[] = blocks.map((b, i) => {
     if (b.kind === "heading")
       return (
-        <p key={i} className="pt-1 text-[15px] font-semibold text-ink">
+        <p key={i} className="pt-1 text-[14px] font-semibold text-ink">
           {b.text}
         </p>
       );
@@ -47,7 +47,7 @@ export function RichText({ text }: { text: string }) {
       return (
         <ul key={i} className="space-y-1.5">
           {b.items.map((it, j) => (
-            <li key={j} className="flex gap-2.5 text-[15px] leading-snug text-ink-soft">
+            <li key={j} className="flex gap-2.5 text-[14px] leading-snug text-ink-soft">
               {it.marker === "plus" ? (
                 <Check size={15} weight="bold" className="mt-0.5 shrink-0 text-sage-ink" aria-hidden />
               ) : (
@@ -66,7 +66,7 @@ export function RichText({ text }: { text: string }) {
       );
     const lead = i === leadIdx;
     return (
-      <p key={i} className={`text-[15px] leading-relaxed ${lead ? "font-medium text-ink" : "text-ink-soft"}`}>
+      <p key={i} className={`text-[14px] leading-relaxed ${lead ? "font-medium text-ink" : "text-ink-soft"}`}>
         {b.text}
       </p>
     );

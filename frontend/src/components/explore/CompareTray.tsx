@@ -45,7 +45,7 @@ export function CompareTray({ lifted = false }: { lifted?: boolean }) {
       {ready ? (
         <Link
           href={href}
-          className="inline-flex h-12 shrink-0 items-center justify-center gap-2.5 whitespace-nowrap rounded-full bg-primary px-6 text-[15px] font-semibold text-on-primary shadow-soft transition-[background-color,transform,box-shadow] hover:bg-primary-hover hover:shadow-lift active:scale-[0.97]"
+          className="inline-flex h-12 shrink-0 items-center justify-center gap-2.5 whitespace-nowrap rounded-full bg-primary px-6 text-[14px] font-semibold text-on-primary shadow-soft transition-[background-color,transform,box-shadow] hover:bg-primary-hover hover:shadow-lift active:scale-[0.97]"
         >
           <Scales size={20} aria-hidden />
           Compare {items.length} homes

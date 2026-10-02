@@ -138,9 +138,9 @@ export function Select({
 
   const sizes =
     variant === "field"
-      ? "h-10 w-full justify-between rounded-xl bg-canvas px-3 text-[15px]"
+      ? "h-10 w-full justify-between rounded-xl bg-canvas px-3 text-[14px]"
       : size === "sm"
-        ? "h-9 rounded-full bg-surface px-3 text-[13px]"
+        ? "h-9 rounded-full bg-surface px-3 text-[12.5px]"
         : "h-11 rounded-full bg-surface px-4 text-sm";
 
   return (

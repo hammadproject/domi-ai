@@ -83,7 +83,7 @@ export function ListingCard({
         </Link>
         <div className="px-1.5 pb-1 pt-4">
           <p className="font-display text-[28px] font-bold leading-none text-ink">{usd(l.price)}</p>
-          <h3 className="mt-2 break-words text-[15px] font-medium leading-snug text-ink">{street(l)}</h3>
+          <h3 className="mt-2 break-words text-[14px] font-medium leading-snug text-ink">{street(l)}</h3>
           <p className="text-sm text-muted">{cityLine(l)}</p>
           <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-soft">
             {l.beds != null && (
@@ -135,7 +135,7 @@ export function ListingCard({
       </button>
       <div className="flex min-w-0 flex-1 flex-col">
         <p className="font-display text-[26px] font-bold leading-none text-ink">{usd(l.price)}</p>
-        <h3 className="mt-1.5 break-words text-[15px] font-medium leading-snug text-ink">{street(l)}</h3>
+        <h3 className="mt-1.5 break-words text-[14px] font-medium leading-snug text-ink">{street(l)}</h3>
         <p className="truncate text-sm text-muted">{cityLine(l)}</p>
         <p className="mt-1.5 text-sm text-ink-soft">{homeFacts(l)}</p>
         <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-3">
